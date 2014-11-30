@@ -101,6 +101,9 @@ public final class GL {
 		// enable backface culling (render only half of everything! :D cheap hack for hardware culling)
 		glEnable(GL_CULL_FACE);
 		
+		// set the depth buffer for proper depth alignment
+		glEnable(GL_DEPTH_TEST);
+		
 		/*
 		if (majorVersion >= 2) {
 			supportsOpenGL20 = true;

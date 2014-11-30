@@ -142,8 +142,8 @@ public class Chunk {
 						}
 						
 						if ((x == 0) || isTransparent(x-1, y, z)) {
-							vertex = Cube.vertices[Cube.FACE_RIGHT];
-							for (int i = 0; i < 12; i += 3) {
+							vertex = Cube.vertices[Cube.FACE_LEFT];
+							for (int i = 0; i < 12; i += 3) {								
 								vertexList.add(vertex[i    ] + position.x + (float)x);
 								vertexList.add(vertex[i + 1] + position.y + (float)y);
 								vertexList.add(vertex[i + 2] + position.z + (float)z);
