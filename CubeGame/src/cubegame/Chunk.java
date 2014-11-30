@@ -96,6 +96,8 @@ public class Chunk {
 	 * builds the vertex list for the chunk
 	 */
 	private void buildVertexList() {
+		long timeStart = Time.getTime();
+		
 		vertexList.clear();
 		normalList.clear();
 		
@@ -211,6 +213,9 @@ public class Chunk {
 				}
 			}
 		}
+		
+		int t = (int)(Time.getTime() - timeStart);
+		System.out.println("Took " + t + "ms to generate the chunk");
 	}
 
 	/**
