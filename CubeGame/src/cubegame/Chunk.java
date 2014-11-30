@@ -111,6 +111,8 @@ public class Chunk {
 					if (cube == Cube.DIRT) {
 						// do we have an invisible block above us (or end of chunk)?  
 						// If we do, then push the vertices
+						
+						// top face
 						if (((y + 1) == CHUNK_SIZE) || isTransparent(x, y+1, z)) {
 							vertex = Cube.vertices[Cube.FACE_TOP];
 							for (int i = 0; i < 12; i += 3) {
@@ -126,6 +128,7 @@ public class Chunk {
 							normalList.add(normal[2]);
 						}
 						
+						// compute bottom face
 						if ((y == 0) || isTransparent(x, y-1, z)) {
 							vertex = Cube.vertices[Cube.FACE_BOTTOM];
 							for (int i = 0; i < 12; i += 3) {
@@ -141,6 +144,7 @@ public class Chunk {
 							normalList.add(normal[2]);							
 						}
 						
+						// compute left face
 						if ((x == 0) || isTransparent(x-1, y, z)) {
 							vertex = Cube.vertices[Cube.FACE_LEFT];
 							for (int i = 0; i < 12; i += 3) {								
@@ -156,6 +160,7 @@ public class Chunk {
 							normalList.add(normal[2]);								
 						}
 						
+						// Compute right face
 						if (((x + 1) == CHUNK_SIZE) || isTransparent(x+1, y, z)) {
 							vertex = Cube.vertices[Cube.FACE_RIGHT];
 							for (int i = 0; i < 12; i += 3) {
@@ -169,6 +174,38 @@ public class Chunk {
 							normalList.add(normal[0]);
 							normalList.add(normal[1]);
 							normalList.add(normal[2]);								
+						}
+						
+						// front face
+						if (((z + 1) == CHUNK_SIZE) || isTransparent(x, y, z + 1)) {
+							vertex = Cube.vertices[Cube.FACE_FRONT];
+							for (int i = 0; i < 12; i += 3) {
+								vertexList.add(vertex[i    ] + position.x + (float)x);
+								vertexList.add(vertex[i + 1] + position.y + (float)y);
+								vertexList.add(vertex[i + 2] + position.z + (float)z);
+							}
+						
+							// add normal
+							normal = Cube.normals[Cube.FACE_FRONT];
+							normalList.add(normal[0]);
+							normalList.add(normal[1]);
+							normalList.add(normal[2]); 
+						}
+						
+						// back face
+						if ((z == 0) || isTransparent(x, y, z - 1)) {
+							vertex = Cube.vertices[Cube.FACE_BACK];
+							for (int i = 0; i < 12; i += 3) {
+								vertexList.add(vertex[i    ] + position.x + (float)x);
+								vertexList.add(vertex[i + 1] + position.y + (float)y);
+								vertexList.add(vertex[i + 2] + position.z + (float)z);
+							}
+						
+							// add normal
+							normal = Cube.normals[Cube.FACE_BACK];
+							normalList.add(normal[0]);
+							normalList.add(normal[1]);
+							normalList.add(normal[2]); 							
 						}
 					}
 				}
