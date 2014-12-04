@@ -22,7 +22,14 @@ package cubegame;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.util.glu.GLU.*;
 
+import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+
+import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.util.vector.Matrix;
+import org.lwjgl.util.vector.Matrix4f;
+import org.lwjgl.util.vector.Vector3f;
 
 import math.Vector3;
 
@@ -30,12 +37,15 @@ public class Camera {
 	/**
 	 * The 3D position of the camera
 	 */
-	private Vector3 position;
+	private Vector3f position;
 	
 	/**
 	 * The euler rotation of the camera
 	 */
-	private Vector3 rotation;
+	private Vector3f rotation;
+	
+	public static final float movementSpeed = 10.0f;
+	public static final float cameraSpeed = 0.01f;
 	
 	/**
 	 * Creates a camera object and initializes it
@@ -55,7 +65,7 @@ public class Camera {
 		glMatrixMode(GL_MODELVIEW);
 		
 		// set transform
-		setTransform(new Vector3(0.0f, 0.0f, 0.0f), new Vector3(20.0f, 30.0f, 0.0f));
+		setTransform(new Vector3f(0.0f, 0.0f, 0.0f), new Vector3f(0.0f, 0.0f, 0.0f));
 	}
 	
 	/**
@@ -64,26 +74,30 @@ public class Camera {
 	public void update() {
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
+		
+		Matrix4f r = getRotationMatrix();
+
+		float mat[] = {
+			r.m00, r.m10, r.m20, r.m30,
+			r.m01, r.m11, r.m21, r.m31,
+			r.m02, r.m12, r.m22, r.m32,
+			r.m03, r.m13, r.m23, r.m33
+		};
+		
+		FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
+		buffer.put(mat);
+		buffer.rewind();
+		
+		glLoadMatrix(buffer);
 		glTranslatef(-position.x, position.y, position.z);
-		glRotatef(rotation.x, 1, 0, 0);
-		glRotatef(rotation.y, 0, 1, 0);
-		glRotatef(rotation.z, 0, 0, 1);
 	}
 	
 	/**
 	 * Sets the position of the camera in 3D space
 	 * @param pos the position vector of the camera
 	 */
-	public void setPosition(Vector3 pos) {
+	public void setPosition(Vector3f pos) {
 		position = pos;
-	}
-	
-	/**
-	 * Sets the rotation of the camera in euler angles
-	 * @param rot the euler rotation vector
-	 */
-	public void setRotation(Vector3 rot) {
-		rotation = rot;
 	}
 	
 	/**
@@ -91,7 +105,7 @@ public class Camera {
 	 * @param pos the position of the camera
 	 * @param rot the rotation of the camera in euler representation
 	 */
-	public void setTransform(Vector3 pos, Vector3 rot) {
+	public void setTransform(Vector3f pos, Vector3f rot) {
 		position = pos;
 		rotation = rot;
 	}
@@ -100,74 +114,63 @@ public class Camera {
 	 * Gets the position of the camera
 	 * @return the position of the camera
 	 */
-	public Vector3 getPosition() {
+	public Vector3f getPosition() {
 		return position;
 	}
 	
 	/**
-	 * Gets the euler rotation of the camera
+	 * Gets the matrix rotation of the camera
 	 * @return the rotation
 	 */
-	public Vector3 getRotation() {
+	public Vector3f getRotation() {
 		return rotation;
 	}
 	
-	/**
-	 * apply camera rotation and translations
-	 * @param x the amount to move in the X direction
-	 * @param z the amount to move in the Z direction
-	 */
-	public void apply(float x, float z) {
-		// first apply rotation
-		applyRotation();
-		
-		double yaw = (double)getYaw();
-		
-		// x axis
-		if (x > 0.0f) {
-			
-		} else if (x < 0.0f) {
-			
-		}
-		
-		// z axis
-		if (z > 0.0f) {
-			position.x -= Math.abs(z) * (float)Math.sin(Math.toRadians(yaw));
-			position.z += Math.abs(z) * (float)Math.cos(Math.toRadians(yaw));
-		} else if (z < 0.0f) {
-			position.x += Math.abs(z) * (float)Math.sin(Math.toRadians(yaw));
-			position.z -= Math.abs(z) * (float)Math.cos(Math.toRadians(yaw));
-		}
-	}
-	
-	/**
-	 * Adds rotation to the camera from mouse movement
-	 */
-	private void applyRotation() {
-		rotation.x += (float)Mouse.getDY();
-		rotation.y += (float)Mouse.getDX();
-	}
-	
 	public float getYaw() {
-		return rotation.y;
+		//TODO
+		return 0;
+//		return rotation.y;
 	}
 	
 	public float getPitch() {
-		return rotation.x;
+		//TODO
+		return 0;
+//		return rotation.x;
 	}
 	
 	/**
-	 * Moves the camera by this amount
+	 * Applies the given motion
 	 * @param x the amount to move in the X direction
 	 * @param y the amount to move in the Y direction
 	 * @param z the amount to move in the Z direction
-	 * 
-	 * @deprecated
 	 */
-	// TODO remove this
-	public void moveBy(float x, float y, float z) {
-		position.x += x;
-		position.y += y;
-		position.z += z;
+	public void applyMotion(float x, float y, float z) {
+		Vector3f motion = (Vector3f) new Vector3f(x, y, z).scale(movementSpeed);
+		
+		Matrix4f matrix = (Matrix4f) new Matrix4f().setIdentity();
+		Matrix4f.rotate(rotation.y, new Vector3f(0.0f, -1.0f, 0.0f), matrix, matrix);
+		Matrix4f.rotate(rotation.x, new Vector3f(1.0f, 0.0f, 0.0f), matrix, matrix);
+		Matrix4f.translate(motion, matrix, matrix);
+		
+		position = Vector3f.add(position, new Vector3f(matrix.m30, matrix.m31, matrix.m32), null);
+	}
+	
+	/**
+	 * Applies the given rotation, adding it to the camera's current rotation vector
+	 * @param pitch The pitch to add to the current rotation
+	 * @param yaw The yaw to add to the current rotation
+	 */
+	public void applyRotation(float pitch, float yaw) {
+		rotation.x += pitch * cameraSpeed;
+		rotation.y += -yaw * cameraSpeed;
+	}
+	
+	public Matrix4f getRotationMatrix() {
+		Matrix4f r = new Matrix4f();
+		r.setIdentity();
+		Matrix4f.rotate(rotation.y, new Vector3f(0.0f, 1.0f, 0.0f), r, r);
+		Matrix4f.rotate(rotation.x, new Vector3f(1.0f, 0.0f, 0.0f), r, r);
+		
+		return r;
 	}
 }
