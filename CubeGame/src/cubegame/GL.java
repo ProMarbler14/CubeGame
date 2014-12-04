@@ -2,6 +2,7 @@
 // GL.java
 //
 // Copyright (c) 2014 Jeff Hutchinson
+// Copyright (c) 2014 Glenn Smith
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -104,6 +105,15 @@ public final class GL {
 		// enable hardware culling, idk why its GL_FRONT but its inside out with doing the default...
 		glCullFace(GL_FRONT);
 		glEnable(GL_CULL_FACE);
+		
+		glShadeModel(GL_SMOOTH);
+		glEnable(GL_COLOR_MATERIAL);
+		
+		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHT0);
+		
+		glLight(GL_LIGHT0, GL_POSITION, Util.createBuffer(new float[] {0.0f, 1.0f, 1.0f, 0.0f}));
+		glLight(GL_LIGHT0, GL_DIFFUSE, Util.createBuffer(new float[] {1.0f, 1.0f, 1.0f, 1.0f}));
 		
 		/*
 		if (majorVersion >= 2) {
