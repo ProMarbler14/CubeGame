@@ -47,6 +47,9 @@ public class Camera {
 	public static final float movementSpeed = 10.0f;
 	public static final float cameraSpeed = 0.01f;
 	
+	public static final float pitchMax = 1.4f;
+	public static final float pitchMin = -1.55f;
+	
 	/**
 	 * Creates a camera object and initializes it
 	 */
@@ -163,6 +166,8 @@ public class Camera {
 	public void applyRotation(float pitch, float yaw) {
 		rotation.x += pitch * cameraSpeed;
 		rotation.y += -yaw * cameraSpeed;
+		
+		rotation.x = Math.max(Math.min(rotation.x, pitchMax), pitchMin);
 	}
 	
 	public Matrix4f getRotationMatrix() {
