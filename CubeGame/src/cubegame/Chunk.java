@@ -22,6 +22,8 @@ package cubegame;
 
 import java.util.ArrayList;
 
+import org.lwjgl.opengl.GL15;
+
 import math.Vector3;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -53,6 +55,9 @@ public class Chunk {
 	 * The display list id if display lists are used
 	 */
 	private int displayList = -1;
+	
+	private int vertexBufferId = -1;
+	private int indexBufferId = -1;
 	
 	/**
 	 * Creates a chunk of the size CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE
@@ -90,45 +95,20 @@ public class Chunk {
 		System.out.println("Creating a new chunk");
 		
 		// construct the list
-		buildVertexList();
+		buildChunk();
 		
 		// prep it (build display list or vbo)
 		preRenderChunk();
 	}
 	
 	/**
-	 * builds the vertex list for the chunk
+	 * Builds an, optimized chunk
 	 */
-	private void buildVertexList() {
-		long timeStart = Time.getTime();
-		
+	private void buildChunk() {
+		// clear list
 		vertexList.clear();
-		normalList.clear();
+		normalList.clear();		
 		
-		if (GL.isImmediateMode()) {
-			buildChunkImmediateMode();
-		} else {
-			// build an optimized, culled vertex list
-			byte cube;
-			float vertex[];
-			float normal[];
-			for (int x = 0; x < CHUNK_SIZE; x ++) {
-				for (int z = 0; z < CHUNK_SIZE; z ++) {
-					for (int y = 0; y < CHUNK_SIZE; y ++) {
-						cube = cubeList[x][y][z];
-					}
-				}
-			}
-		}
-		
-		int t = (int)(Time.getTime() - timeStart);
-		System.out.println("Took " + t + "ms to generate the chunk");
-	}
-	
-	/**
-	 * Builds an, optimized chunk for immediate mode rendering (with display lists)
-	 */
-	private void buildChunkImmediateMode() {
 		int x, y, z;
 		for (x = 0; x < CHUNK_SIZE; x ++) {
 			for (z = 0; z < CHUNK_SIZE; z ++) {
@@ -140,75 +120,109 @@ public class Chunk {
 
 					// back face
 					if (z == 0 || isTransparent(x, y, z - 1))
-						buildFaceImmediateMode((float)x, (float)y, (float)z, Cube.FACE_BACK);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_BACK);
 					
 					// front face
 					if ((z + 1 == CHUNK_SIZE) || isTransparent(x, y, z + 1))
-						buildFaceImmediateMode((float)x, (float)y, (float)z, Cube.FACE_FRONT);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_FRONT);
 					
 					// left face
 					if (x == 0 || isTransparent(x - 1, y, z))
-						buildFaceImmediateMode((float)x, (float)y, (float)z, Cube.FACE_LEFT);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_LEFT);
 					
 					// right face
 					if ((x + 1 == CHUNK_SIZE) || isTransparent(x + 1, y, z))
-						buildFaceImmediateMode((float)x, (float)y, (float)z, Cube.FACE_RIGHT);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_RIGHT);
 					
 					// bottom face
 					if (y == 0 || isTransparent(x, y - 1, z))
-						buildFaceImmediateMode((float)x, (float)y, (float)z, Cube.FACE_BOTTOM);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_BOTTOM);
 					
 					// top face
 					if ((y + 1 == CHUNK_SIZE) || isTransparent(x, y + 1, z))
-						buildFaceImmediateMode((float)x, (float)y, (float)z, Cube.FACE_TOP);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_TOP);
 				}
 			}
 		}
 	}
 	
 	/**
-	 * Builds a face for immediate mode rendering
+	 * Builds a face for a cube
 	 * @param x cube x position
 	 * @param y cube y position
 	 * @param z cube z position
 	 * @param side the face of the cube
 	 */
-	private void buildFaceImmediateMode(float x, float y, float z, int side) {
+	private void buildFace(float x, float y, float z, int side) {
 		float buffer[] = Cube.vertices[side];
-		// 0, 1, 2, 2, 3, 0
 		
-		// point 0
-		vertexList.add(buffer[0] + position.x + x);
-		vertexList.add(buffer[1] + position.y + y);
-		vertexList.add(buffer[2] + position.z + z);
-		
-		// point 1
-		vertexList.add(buffer[3] + position.x + x);
-		vertexList.add(buffer[4] + position.y + y);
-		vertexList.add(buffer[5] + position.z + z);
-		
-		// point 2 (2 times for winding indicies....gotta keep em seperate cuz of normals and coords and stuff)
-		for (int i = 0; i < 2; i ++) {
-			vertexList.add(buffer[6] + position.x + x);
-			vertexList.add(buffer[7] + position.y + y);
-			vertexList.add(buffer[8] + position.z + z);
+		if (GL.isImmediateMode()) {
+			// 0, 1, 2, 2, 3, 0
+			
+			// point 0
+			vertexList.add(buffer[0] + position.x + x);
+			vertexList.add(buffer[1] + position.y + y);
+			vertexList.add(buffer[2] + position.z + z);
+			
+			// point 1
+			vertexList.add(buffer[3] + position.x + x);
+			vertexList.add(buffer[4] + position.y + y);
+			vertexList.add(buffer[5] + position.z + z);
+			
+			// point 2 (2 times for winding indicies....gotta keep em seperate cuz of normals and coords and stuff)
+			for (int i = 0; i < 2; i ++) {
+				vertexList.add(buffer[6] + position.x + x);
+				vertexList.add(buffer[7] + position.y + y);
+				vertexList.add(buffer[8] + position.z + z);
+			}
+			
+			// point 3
+			vertexList.add(buffer[9]  + position.x + x);
+			vertexList.add(buffer[10] + position.y + y);
+			vertexList.add(buffer[11] + position.z + z);
+			
+			// point 0 (again)
+			vertexList.add(buffer[0] + position.x + x);
+			vertexList.add(buffer[1] + position.y + y);
+			vertexList.add(buffer[2] + position.z + z);
+			
+			// normal
+			float normals[] = Cube.normals[side];
+			normalList.add(normals[0]);
+			normalList.add(normals[1]);
+			normalList.add(normals[2]);
+		} else {
+			// yay, VBOs :D
+			// TODO: index buffers, actually maybe not....dunno yet, oh well
+			// 0, 1, 2, 2, 3, 0
+			
+			// point 0
+			vertexList.add(buffer[0] + position.x + x);
+			vertexList.add(buffer[1] + position.y + y);
+			vertexList.add(buffer[2] + position.z + z);
+			
+			// point 1
+			vertexList.add(buffer[3] + position.x + x);
+			vertexList.add(buffer[4] + position.y + y);
+			vertexList.add(buffer[5] + position.z + z);
+			
+			// point 2 (2 times for winding indicies....gotta keep em seperate cuz of normals and coords and stuff)
+			for (int i = 0; i < 2; i ++) {
+				vertexList.add(buffer[6] + position.x + x);
+				vertexList.add(buffer[7] + position.y + y);
+				vertexList.add(buffer[8] + position.z + z);
+			}
+			
+			// point 3
+			vertexList.add(buffer[9]  + position.x + x);
+			vertexList.add(buffer[10] + position.y + y);
+			vertexList.add(buffer[11] + position.z + z);
+			
+			// point 0 (again)
+			vertexList.add(buffer[0] + position.x + x);
+			vertexList.add(buffer[1] + position.y + y);
+			vertexList.add(buffer[2] + position.z + z);			
 		}
-		
-		// point 3
-		vertexList.add(buffer[9]  + position.x + x);
-		vertexList.add(buffer[10] + position.y + y);
-		vertexList.add(buffer[11] + position.z + z);
-		
-		// point 0 (again)
-		vertexList.add(buffer[0] + position.x + x);
-		vertexList.add(buffer[1] + position.y + y);
-		vertexList.add(buffer[2] + position.z + z);
-		
-		// normal
-		float normals[] = Cube.normals[side];
-		normalList.add(normals[0]);
-		normalList.add(normals[1]);
-		normalList.add(normals[2]);
 	}
 
 	/**
@@ -248,7 +262,26 @@ public class Chunk {
 			glEndList();
 		} else {
 			System.out.println("Preparing the chunk VBO!");
-			// no VBO yet, TODO (only edit part of VBO that needs changed, not all of it! :)
+			
+			// generate a VBO if we do not have one, 
+			// if we already have one, we will just update it
+			if (vertexBufferId == -1) {
+				System.out.println("Creating VBO!");
+				
+				// create the buffer
+				vertexBufferId = GL.genVBO();
+				
+				// prepare the buffer
+				float array[] = new float[vertexList.size()];
+				for (int i = 0; i < vertexList.size(); i ++)
+					array[i] = vertexList.get(i);
+				GL.prepareStaticVBO(vertexBufferId, Util.createBuffer(array));
+				
+			} else {
+				System.out.println("Updating the VBO!");
+				
+				// todo
+			}
 		}
 	}
 	
@@ -260,7 +293,24 @@ public class Chunk {
 			// render the display list!
 			glCallList(displayList);
 		} else {
+			// render VBO
 			
+			glColor3f(1.0f, 0.0f, 0.0f);
+			
+			// enable drawing
+			glEnableClientState(GL_VERTEX_ARRAY);
+			
+			// bind the VBO and tell openGL the vertex pointer offset
+			GL.bindStaticBuffer(vertexBufferId);
+			glVertexPointer(3, GL_FLOAT, 0, 0);
+			
+			// TODO: normals (lighting will look different ATM since normals are not sent)
+			
+			// draw!
+			glDrawArrays(GL_TRIANGLES, 0, vertexList.size() / 3);
+			
+			// disable drawing
+			glDisableClientState(GL_VERTEX_ARRAY);
 		}
 	}
 	
