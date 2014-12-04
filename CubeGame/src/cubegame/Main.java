@@ -19,12 +19,14 @@
 
 package cubegame;
 
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 public class Main {
 	public static void main(String[] args) {
 		Graphics.init(800, 600);
 		Time.init();
+		Mouse.setGrabbed(true);
 
 		// Comment me to disable vertical sync
 		//Display.setVSyncEnabled(true);
