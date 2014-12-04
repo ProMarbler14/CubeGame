@@ -28,10 +28,10 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL11.*;
 
 import org.lwjgl.opengl.ARBVertexBufferObject;
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.util.glu.*;
 
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 
@@ -91,11 +91,18 @@ public final class GL {
 	private static ArrayList<Integer> displayListGC;
 	
 	/**
+	 * Stores VBO ids and cleans them up at the end
+	 * Since the garbage collector doesn't interfere with native and GL code
+	 */
+	private static ArrayList<Integer> vboGC;
+	
+	/**
 	 * Initializes the OpenGL system to be usable
 	 */
 	public static void init() {
 		initialized = true;
 		displayListGC = new ArrayList<Integer>();
+		vboGC = new ArrayList<Integer>();
 		majorVersion = Integer.parseInt(getOpenGLVersion().substring(0,1).trim());
 		minorVersion = Integer.parseInt(getOpenGLVersion().substring(2,3).trim());
 		
@@ -115,7 +122,7 @@ public final class GL {
 		glLight(GL_LIGHT0, GL_POSITION, Util.createBuffer(new float[] {0.0f, 1.0f, 1.0f, 0.0f}));
 		glLight(GL_LIGHT0, GL_DIFFUSE, Util.createBuffer(new float[] {1.0f, 1.0f, 1.0f, 1.0f}));
 		
-		/*
+		
 		if (majorVersion >= 2) {
 			supportsOpenGL20 = true;
 			supportsOpenGL15 = true;
@@ -127,12 +134,12 @@ public final class GL {
 			} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
 				supportsARBVBO = true;
 				supportsVBO = true;
-			} else {*/
+			} else {
 				// old powerpc macs probably? tehehe
 				// I'LL SUPPORT THEM FOREVERRR
 				useImmediateMode = true;
-			/*}
-		}*/
+			}
+		}
 	}
 	
 	/**
@@ -145,6 +152,15 @@ public final class GL {
 		for (int id : displayListGC)
 			glDeleteLists(id, 1);
 		displayListGC.clear();
+		
+		// free all vbos
+		for (int id : vboGC) {
+			if (supportsOpenGL15)
+				glDeleteBuffers(id);
+			else if (supportsARBVBO)
+				ARBVertexBufferObject.glDeleteBuffersARB(id);
+		}
+		vboGC.clear();
 	}
 	
 	/**
@@ -183,12 +199,32 @@ public final class GL {
 	}
 	
 	/**
-	 * prepares a static vertex buffer object
+	 * prepares a static vertex buffer object of floats
 	 * 
 	 * @param id the VBO id
-	 * @param data the data to be pushed into the VBO
+	 * @param data (floats) the data to be pushed into the VBO
+	 * @see int method
 	 */
-	public static void prepareStaticVBO(int id, float [] data) {
+	public static void prepareStaticVBO(int id, FloatBuffer buffer) {
+		if (supportsOpenGL15) {
+			glBindBuffer(GL_ARRAY_BUFFER, id);
+			glBufferData(GL_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
+		} else if (supportsARBVBO) {
+			ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, id);
+			ARBVertexBufferObject.glBufferDataARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, buffer, ARBVertexBufferObject.GL_STATIC_DRAW_ARB);
+		}
+	}
+	
+	/**
+	 * prepares a static vertex buffer object of ints
+	 * 
+	 * @param id the VBO id
+	 * @param data (ints) the data to be pushed into the VBO
+	 * @see float method
+	 */
+	public static void prepareStaticVBO(int id, IntBuffer buffer) {
+		// TODO
+		System.err.println("prepareStaticVBO(int id, IntBuffer buffer) - method not done yet!");
 		if (supportsOpenGL15) {
 			
 		} else if (supportsARBVBO) {
@@ -197,18 +233,31 @@ public final class GL {
 	}
 	
 	/**
+	 * Binds a static VBO before submitting it to the graphics driver
+	 * @param id the VBO id
+	 */
+	public static void bindStaticBuffer(int id) {
+		if (supportsOpenGL15)
+			glBindBuffer(GL_ARRAY_BUFFER, id);
+		else if (supportsARBVBO)
+			ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, id);
+	}
+		
+	
+	/**
 	 * Deletes the vertex buffer object
-	 * @param id
+	 * @param id the VBO id
 	 */
 	public static void deleteVBO(int id) {
 		if (supportsOpenGL15)
 			glDeleteBuffers(id);
 		else if (supportsARBVBO)
 			ARBVertexBufferObject.glDeleteBuffersARB(id);
+		vboGC.remove(id);
 	}
 	
 	/**
-	 * 
+	 * Checks to see if the GL is using immediate rendering mode
 	 * @return true if the GL context is rendering using immediate mode
 	 */
 	public static boolean isImmediateMode() {
