@@ -20,43 +20,37 @@
 package cubegame;
 
 import org.lwjgl.input.*;
+import org.lwjgl.opengl.Display;
 
 public class Input {
 	private static float horizontal = 0.0f;
 	private static float vertical = 0.0f;
 	
+	private static float pitch = 0.0f;
+	private static float yaw = 0.0f;
+	
 	/**
 	 * Pulls the input from the keyboard
 	 */
 	public static void pullInput() {
-		while (Keyboard.next()) {
-			// key press down
-			if (Keyboard.getEventKeyState()) {
-				// Vertical input
-				if (Keyboard.getEventKey() == Keyboard.KEY_W)
-					vertical += 1.0f;
-				if (Keyboard.getEventKey() == Keyboard.KEY_S)
-					vertical -= 1.0f;
-				
-				// Horizontal input
-				if (Keyboard.getEventKey() == Keyboard.KEY_D)
-					horizontal += 1.0f;
-				if (Keyboard.getEventKey() == Keyboard.KEY_A)
-					horizontal -= 1.0f;
-			} else { // key press up
-				// Vertical input
-				if (Keyboard.getEventKey() == Keyboard.KEY_W)
-					vertical -= 1.0f;
-				if (Keyboard.getEventKey() == Keyboard.KEY_S)
-					vertical += 1.0f;
-				
-				// Horizontal input
-				if (Keyboard.getEventKey() == Keyboard.KEY_D)
-					horizontal -= 1.0f;
-				if (Keyboard.getEventKey() == Keyboard.KEY_A)
-					horizontal += 1.0f;				
-			}
-		}
+		horizontal = 0;
+		if (Keyboard.isKeyDown(Keyboard.KEY_D))
+			horizontal += 1.0f;
+		if (Keyboard.isKeyDown(Keyboard.KEY_A))
+			horizontal += -1.0f;
+		
+		vertical = 0;
+		if (Keyboard.isKeyDown(Keyboard.KEY_W))
+			vertical += 1.0f;
+		if (Keyboard.isKeyDown(Keyboard.KEY_S))
+			vertical += -1.0f;
+		
+		int cx = Display.getWidth() / 2;
+		int cy = Display.getHeight() / 2;
+		
+		pitch = (float)Mouse.getDY();
+		yaw = (float)Mouse.getDX();
+		
 	}
 	
 	/**
@@ -73,5 +67,21 @@ public class Input {
 	 */
 	public static float getVertical() {
 		return vertical;
+	}
+	
+	/**
+	 * The change in pitch to be applied
+	 * @return float
+	 */
+	public static float getPitch() {
+		return pitch;
+	}
+	
+	/**
+	 * The change in yaw to be applied
+	 * @return float
+	 */
+	public static float getYaw() {
+		return yaw;
 	}
 }
