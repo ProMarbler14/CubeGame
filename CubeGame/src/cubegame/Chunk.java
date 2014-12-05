@@ -60,6 +60,27 @@ public class Chunk {
 	private int indexBufferId = -1;
 	
 	/**
+	 * Colors that could be set, determines chunk color.
+	 * Ranges from 0.0f to 1.0f
+	 */
+	private float redValue = 0.0f;
+	private float greenValue = 0.0f;
+	private float blueValue = 1.0f;
+	
+	/**
+	 * Sets the colors for rendering the chunk
+	 * @param r value of red
+	 * @param g value of green
+	 * @param b value of blue
+	 */
+	public void setColors(float r, float g, float b) {
+		redValue = r;
+		greenValue = g;
+		blueValue = b;
+	}
+	
+	
+	/**
 	 * Creates a chunk of the size CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE
 	 * @param position the world position of the cube, representing position
 	 * of cube inside of chunk at local position <0, 0, 0>
@@ -243,7 +264,7 @@ public class Chunk {
 			glBegin(GL_TRIANGLES);
 				// with display list, you have to re-do the whole displayList :(
 				int size = vertexList.size();
-				glColor3f(1.0f, 0.0f, 0.0f);
+				glColor3f(redValue, greenValue, blueValue);
 				int normal = 0;
 				for (int i = 0; i < size; i += 18) {					
 					// ADD THE NORMAL	
@@ -295,7 +316,7 @@ public class Chunk {
 		} else {
 			// render VBO
 			
-			glColor3f(1.0f, 0.0f, 0.0f);
+			glColor3f(redValue, greenValue, blueValue);
 			
 			// enable drawing
 			glEnableClientState(GL_VERTEX_ARRAY);
