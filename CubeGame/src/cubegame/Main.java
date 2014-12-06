@@ -27,6 +27,7 @@ public class Main {
 	public static void main(String[] args) {
 		Graphics.init(800, 600);
 		Time.init();
+		World.init();
 		Mouse.setGrabbed(true);
 
 		// Comment me to disable vertical sync

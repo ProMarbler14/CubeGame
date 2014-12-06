@@ -23,6 +23,7 @@ package cubegame;
 import java.util.ArrayList;
 
 import org.lwjgl.opengl.GL15;
+import org.lwjgl.util.vector.Vector2f;
 
 import math.Vector3;
 import static org.lwjgl.opengl.GL11.*;
@@ -32,9 +33,8 @@ public class Chunk {
 	
 	/**
 	 * cubeList holds each cube's type (grass, air, ect)
-	 * stored in the smallest datatype possible
 	 */
-	private byte[][][] cubeList;
+	private short[][][] cubeList;
 	
 	/**
 	 * vertexList holds the vertices that are used for rendering the chunk
@@ -47,6 +47,11 @@ public class Chunk {
 	private ArrayList<Float> normalList; 
 	
 	/**
+	 * Texture coord list
+	 */
+	private ArrayList<Float> textureList;
+	
+	/**
 	 * The global world position of the chunk
 	 */
 	private Vector3 position;
@@ -57,7 +62,6 @@ public class Chunk {
 	private int displayList = -1;
 	
 	private int vertexBufferId = -1;
-	private int indexBufferId = -1;
 	
 	/**
 	 * Creates a chunk of the size CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE
@@ -67,7 +71,8 @@ public class Chunk {
 	public Chunk(Vector3 position) {
 		vertexList = new ArrayList<Float>();
 		normalList = new ArrayList<Float>();
-		cubeList = new byte[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
+		textureList = new ArrayList<Float>();
+		cubeList = new short[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 		this.position = position;
 		createChunk();
 	}
@@ -80,14 +85,10 @@ public class Chunk {
 		for (int x = 0; x < CHUNK_SIZE; x ++) {
 			for (int z = 0; z < CHUNK_SIZE; z ++) {
 				for (int y = 0; y < CHUNK_SIZE; y ++) {
-					//if (y > 0)
-						//break;
-					
-					// for now, just one layer of dirt
-					//if (x % 4 == 0)
+					if (y == CHUNK_SIZE - 1)
+						cubeList[x][y][z] = Cube.COBBLE;
+					else
 						cubeList[x][y][z] = Cube.DIRT;
-					//else
-						//cubeList[x][y][z] = Cube.AIR;
 				}
 			}
 		}
@@ -110,37 +111,38 @@ public class Chunk {
 		normalList.clear();		
 		
 		int x, y, z;
+		short material;
 		for (x = 0; x < CHUNK_SIZE; x ++) {
 			for (z = 0; z < CHUNK_SIZE; z ++) {
 				for (y = 0; y < CHUNK_SIZE; y ++) {
-					
+					material = cubeList[x][y][z];
 					// if it is air, we render no sides!
-					if (cubeList[x][y][z] == Cube.AIR)
+					if (material == Cube.AIR)
 						continue;
 
 					// back face
 					if (z == 0 || isTransparent(x, y, z - 1))
-						buildFace((float)x, (float)y, (float)z, Cube.FACE_BACK);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_BACK, material);
 					
 					// front face
 					if ((z + 1 == CHUNK_SIZE) || isTransparent(x, y, z + 1))
-						buildFace((float)x, (float)y, (float)z, Cube.FACE_FRONT);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_FRONT, material);
 					
 					// left face
 					if (x == 0 || isTransparent(x - 1, y, z))
-						buildFace((float)x, (float)y, (float)z, Cube.FACE_LEFT);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_LEFT, material);
 					
 					// right face
 					if ((x + 1 == CHUNK_SIZE) || isTransparent(x + 1, y, z))
-						buildFace((float)x, (float)y, (float)z, Cube.FACE_RIGHT);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_RIGHT, material);
 					
 					// bottom face
 					if (y == 0 || isTransparent(x, y - 1, z))
-						buildFace((float)x, (float)y, (float)z, Cube.FACE_BOTTOM);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_BOTTOM, material);
 					
 					// top face
 					if ((y + 1 == CHUNK_SIZE) || isTransparent(x, y + 1, z))
-						buildFace((float)x, (float)y, (float)z, Cube.FACE_TOP);
+						buildFace((float)x, (float)y, (float)z, Cube.FACE_TOP, material);
 				}
 			}
 		}
@@ -152,8 +154,9 @@ public class Chunk {
 	 * @param y cube y position
 	 * @param z cube z position
 	 * @param side the face of the cube
+	 * @param material the material to render on the face
 	 */
-	private void buildFace(float x, float y, float z, int side) {
+	private void buildFace(float x, float y, float z, int side, short material) {
 		float buffer[] = Cube.vertices[side];
 		
 		if (GL.isImmediateMode()) {
@@ -191,6 +194,13 @@ public class Chunk {
 			normalList.add(normals[0]);
 			normalList.add(normals[1]);
 			normalList.add(normals[2]);
+			
+			// build texture coordinates
+			Vector2f coords[] = Cube.getUVTextureMap(material, World.mapTextureWidth, World.mapTextureHeight);
+			for (Vector2f textCord : coords) {
+				textureList.add(textCord.x);
+				textureList.add(textCord.y);
+			}
 		} else {
 			// yay, VBOs :D
 			// TODO: index buffers, actually maybe not....dunno yet, oh well
@@ -243,20 +253,28 @@ public class Chunk {
 			glBegin(GL_TRIANGLES);
 				// with display list, you have to re-do the whole displayList :(
 				int size = vertexList.size();
-				glColor3f(1.0f, 0.0f, 0.0f);
 				int normal = 0;
+				int textCoords = 0;
 				for (int i = 0; i < size; i += 18) {					
 					// ADD THE NORMAL	
 					glNormal3f(normalList.get(normal), normalList.get(normal + 1), normalList.get(normal + 2));
 					normal += 3;
 					
-					// and the verticies
+					// and the vertices and coords
+					glTexCoord2f(textureList.get(textCoords), textureList.get(textCoords + 1));
 					glVertex3f(vertexList.get(i), vertexList.get(i + 1), vertexList.get(i + 2));
+					glTexCoord2f(textureList.get(textCoords + 2), textureList.get(textCoords + 3));
 					glVertex3f(vertexList.get(i + 3), vertexList.get(i + 4), vertexList.get(i + 5));
+					glTexCoord2f(textureList.get(textCoords + 4), textureList.get(textCoords + 5));
 					glVertex3f(vertexList.get(i + 6), vertexList.get(i + 7), vertexList.get(i + 8));
+					glTexCoord2f(textureList.get(textCoords + 6), textureList.get(textCoords + 7));
 					glVertex3f(vertexList.get(i + 9), vertexList.get(i + 10), vertexList.get(i + 11));
+					glTexCoord2f(textureList.get(textCoords + 8), textureList.get(textCoords + 9));
 					glVertex3f(vertexList.get(i + 12), vertexList.get(i + 13), vertexList.get(i + 14));
-					glVertex3f(vertexList.get(i + 15), vertexList.get(i + 16), vertexList.get(i + 17));					
+					glTexCoord2f(textureList.get(textCoords + 10), textureList.get(textCoords + 11));
+					glVertex3f(vertexList.get(i + 15), vertexList.get(i + 16), vertexList.get(i + 17));
+					
+					textCoords += 12;
 				}
 			glEnd();
 			glEndList();
@@ -319,7 +337,7 @@ public class Chunk {
 	 * @param position the local position of the cube to modify
 	 * @param material the kind of material to use
 	 */
-	public void setCube(Vector3 position, byte material) {
+	public void setCube(Vector3 position, short material) {
 		cubeList[(int)position.x][(int)position.y][(int)position.z] = material;
 		
 		// re-create the display list or VBO
@@ -334,7 +352,7 @@ public class Chunk {
 	 * @return true if the cube is transparent at this location
 	 */
 	public boolean isTransparent(int x, int y, int z) {
-		byte cube = cubeList[x][y][z];
+		short cube = cubeList[x][y][z];
 		if (cube == Cube.AIR)
 			return true;
 		if (cube == Cube.WATER)

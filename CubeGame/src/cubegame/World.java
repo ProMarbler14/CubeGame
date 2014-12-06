@@ -22,14 +22,32 @@ package cubegame;
 
 import java.util.ArrayList;
 
+import org.newdawn.slick.opengl.Texture;
+
 public class World {
 	
 	private static ArrayList<Chunk> chunkList = new ArrayList<Chunk>();
 	
 	/**
+	 * Texture map used for texturing the world
+	 */
+	private static Texture mapTexture;
+	
+	public static final int mapTextureWidth = 16;
+	public static final int mapTextureHeight = 16;
+	
+	public static void init() {
+		// map the texture
+		mapTexture = Util.loadTexture("res/textures/texturemap.png", "PNG");
+	}
+
+	/**
 	 * Renders the world chunks
 	 */
 	public static void render() {
+		// bind the opengl texture
+		mapTexture.bind();
+		
 		// draw all chunks
 		for (Chunk chunk : chunkList) {
 			// TODO:
