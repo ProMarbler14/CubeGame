@@ -122,24 +122,26 @@ public final class GL {
 		glLight(GL_LIGHT0, GL_POSITION, Util.createBuffer(new float[] {0.0f, 1.0f, 1.0f, 0.0f}));
 		glLight(GL_LIGHT0, GL_DIFFUSE, Util.createBuffer(new float[] {1.0f, 1.0f, 1.0f, 1.0f}));
 		
+		// texturing:
+		glEnable(GL_TEXTURE_2D);
 		
-		if (majorVersion >= 2) {
-			supportsOpenGL20 = true;
-			supportsOpenGL15 = true;
-			supportsVBO = true;
-		} else if (majorVersion == 1) {
-			if (minorVersion >= 5) {
-				supportsOpenGL15 = true;
-				supportsVBO = true;
-			} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
-				supportsARBVBO = true;
-				supportsVBO = true;
-			} else {
+		//if (majorVersion >= 2) {
+			//supportsOpenGL20 = true;
+			//supportsOpenGL15 = true;
+			//supportsVBO = true;
+		//} else if (majorVersion == 1) {
+			//if (minorVersion >= 5) {
+				//supportsOpenGL15 = true;
+				//supportsVBO = true;
+			//} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
+				//supportsARBVBO = true;
+				//supportsVBO = true;
+			//} else {
 				// old powerpc macs probably? tehehe
 				// I'LL SUPPORT THEM FOREVERRR
 				useImmediateMode = true;
-			}
-		}
+			//}
+		//}
 	}
 	
 	/**
@@ -180,7 +182,7 @@ public final class GL {
 	public static void deleteDisplayList(int id) {
 		// free it from ram
 		glDeleteLists(id, 1);
-		displayListGC.remove(id);
+		displayListGC.remove((Integer)id);
 	}
 	
 	/**
