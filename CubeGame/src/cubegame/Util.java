@@ -20,9 +20,16 @@
 
 package cubegame;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.util.vector.Vector2f;
+import org.newdawn.slick.opengl.Texture;
+import org.newdawn.slick.opengl.TextureLoader;
 
 public class Util {
 	/**
@@ -34,5 +41,27 @@ public class Util {
 	public static FloatBuffer createBuffer(float data[]) {
 		//Fuck nio for everything except their one-liners
 		return (FloatBuffer)BufferUtils.createFloatBuffer(data.length).put(data).rewind();
+	}
+	
+	/**
+	 * Loads a texture
+	 * @param file the image file to load
+	 * @param extension the file extension to load
+	 * @return the texture object, or null if one could not be created
+	 */
+	public static Texture loadTexture(String file, String extension) {
+		Texture text = null;
+		try {
+			File f = new File(file);
+			FileInputStream stream = new FileInputStream(f);
+			text = TextureLoader.getTexture(extension, stream);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			System.err.println("File " + file + " is not found!");
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("loadTexture() io error.");
+		}
+		return text;
 	}
 }
