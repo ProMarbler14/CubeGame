@@ -14,5 +14,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="thirdparty/lwjgl/jar/lzma.jar"/>
+	<classpathentry kind="lib" path="thirdparty/slick/slick-util.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
