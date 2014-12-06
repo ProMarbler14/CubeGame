@@ -26,6 +26,7 @@ import org.lwjgl.opengl.Display;
 public class Input {
 	private static float horizontal = 0.0f;
 	private static float vertical = 0.0f;
+	private static float depth = 0.0f; // Totally cannot find an appropriate name matching such axis names above.
 	
 	private static float pitch = 0.0f;
 	private static float yaw = 0.0f;
@@ -45,6 +46,12 @@ public class Input {
 			vertical += 1.0f;
 		if (Keyboard.isKeyDown(Keyboard.KEY_S))
 			vertical += -1.0f;
+		
+		depth = 0;
+		if (Keyboard.isKeyDown(Keyboard.KEY_E))
+			depth += 1.0f;
+		if (Keyboard.isKeyDown(Keyboard.KEY_Q))
+			depth += -1.0f;
 		
 		int cx = Display.getWidth() / 2;
 		int cy = Display.getHeight() / 2;
@@ -68,6 +75,14 @@ public class Input {
 	 */
 	public static float getVertical() {
 		return vertical;
+	}
+
+	/**
+	 * The depth axis of input
+	 * @return [-1.0f, 1.0f]
+	 */
+	public static float getDepth() {
+		return depth;
 	}
 	
 	/**

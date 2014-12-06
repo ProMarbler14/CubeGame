@@ -31,7 +31,7 @@ public class GLTest {
 	private static ArrayList<Integer> displayList = new ArrayList<Integer>();
 	
 	public static void prepareImmediateMode() {
-		long t = Time.getTime();
+		long t = Time.getRunTime();
 		
 		int list = glGenLists(1);
 		
@@ -63,7 +63,7 @@ public class GLTest {
 		
 		displayList.add(list);
 		
-		long elapsed = Time.getTime() - t;
+		long elapsed = Time.getRunTime() - t;
 		System.out.println("System took " + elapsed + "ms to create the display list");
 	}
 	

@@ -28,7 +28,7 @@ import math.Vector3;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Chunk {	
-	public final int CHUNK_SIZE = 16;
+	public static final int CHUNK_SIZE = 16;
 	
 	/**
 	 * cubeList holds each cube's type (grass, air, ect)
@@ -74,6 +74,7 @@ public class Chunk {
 	 * @param b value of blue
 	 */
 	public void setColors(float r, float g, float b) {
+		//System.out.println("Colors set to " + r + " " + g + " " + b);
 		redValue = r;
 		greenValue = g;
 		blueValue = b;
@@ -362,4 +363,13 @@ public class Chunk {
 			return true;
 		return false;
 	}
+	
+	/**
+	 * Gets the position of the chunk.
+	 * @return the 3D position.
+	 */
+	public Vector3 getChunkPosition() {
+		return position;
+	}
+	
 }

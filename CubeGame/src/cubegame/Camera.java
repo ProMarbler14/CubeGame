@@ -83,7 +83,7 @@ public class Camera {
 		glMatrixMode(GL_MODELVIEW);
 		
 		// set transform
-		setTransform(new Vector3f(0.0f, 0.0f, 0.0f), new Vector3f(0.0f, 0.0f, 0.0f));
+		setTransform(new Vector3f(8.0f, -18.0f, -17.0f), new Vector3f(0.0f, 0.0f, 0.0f));
 	}
 	
 	/**
