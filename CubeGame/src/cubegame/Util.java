@@ -25,9 +25,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.util.vector.Vector2f;
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
 
@@ -41,6 +41,16 @@ public class Util {
 	public static FloatBuffer createBuffer(float data[]) {
 		//Fuck nio for everything except their one-liners
 		return (FloatBuffer)BufferUtils.createFloatBuffer(data.length).put(data).rewind();
+	}
+	
+	/**
+	 * Creates an int buffer for the given data, all rewound and everything.  Perfect for
+	 * passing into OpenGL.
+	 * @param data The int[] data to use
+	 * @return The converted integer array to buffers
+	 */
+	public static IntBuffer createBuffer(int data[]) {
+		return (IntBuffer)BufferUtils.createIntBuffer(data.length).put(data).rewind();
 	}
 	
 	/**

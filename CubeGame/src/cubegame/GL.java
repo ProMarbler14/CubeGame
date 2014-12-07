@@ -125,23 +125,23 @@ public final class GL {
 		// texturing:
 		glEnable(GL_TEXTURE_2D);
 		
-		//if (majorVersion >= 2) {
-			//supportsOpenGL20 = true;
-			//supportsOpenGL15 = true;
-			//supportsVBO = true;
-		//} else if (majorVersion == 1) {
-			//if (minorVersion >= 5) {
-				//supportsOpenGL15 = true;
-				//supportsVBO = true;
-			//} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
-				//supportsARBVBO = true;
-				//supportsVBO = true;
-			//} else {
+		if (majorVersion >= 2) {
+			supportsOpenGL20 = true;
+			supportsOpenGL15 = true;
+			supportsVBO = true;
+		} else if (majorVersion == 1) {
+			if (minorVersion >= 5) {
+				supportsOpenGL15 = true;
+				supportsVBO = true;
+			} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
+				supportsARBVBO = true;
+				supportsVBO = true;
+			} else {
 				// old powerpc macs probably? tehehe
 				// I'LL SUPPORT THEM FOREVERRR
 				useImmediateMode = true;
-			//}
-		//}
+			}
+		}
 	}
 	
 	/**
@@ -218,19 +218,19 @@ public final class GL {
 	}
 	
 	/**
-	 * prepares a static vertex buffer object of ints
+	 * prepares a static vertex buffer object of integers
 	 * 
 	 * @param id the VBO id
-	 * @param data (ints) the data to be pushed into the VBO
+	 * @param data (integers) the data to be pushed into the VBO
 	 * @see float method
 	 */
 	public static void prepareStaticVBO(int id, IntBuffer buffer) {
-		// TODO
-		System.err.println("prepareStaticVBO(int id, IntBuffer buffer) - method not done yet!");
 		if (supportsOpenGL15) {
-			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
 		} else if (supportsARBVBO) {
-			
+			ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, id);
+			ARBVertexBufferObject.glBufferDataARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, buffer, ARBVertexBufferObject.GL_STATIC_DRAW_ARB);
 		}
 	}
 	
@@ -244,10 +244,20 @@ public final class GL {
 		else if (supportsARBVBO)
 			ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, id);
 	}
-		
 	
 	/**
-	 * Deletes the vertex buffer object
+	 * Binds a static VBO (index buffer object) before submitting it to the graphics driver
+	 * @param id the VBO id
+	 */
+	public static void bindStaticIndexBuffer(int id) {
+		if (supportsOpenGL15)
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+		else if (supportsARBVBO)
+			ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, id);		
+	}
+	
+	/**
+	 * Deletes the vertex buffer object (or index buffer object)
 	 * @param id the VBO id
 	 */
 	public static void deleteVBO(int id) {
