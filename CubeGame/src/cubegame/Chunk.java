@@ -22,12 +22,11 @@ package cubegame;
 
 import java.util.ArrayList;
 
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL15;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.*;
 import org.lwjgl.util.vector.Vector2f;
 
 import math.Vector3;
-import static org.lwjgl.opengl.GL11.*;
 
 public class Chunk {	
 	public final int CHUNK_SIZE = 16;
@@ -67,8 +66,21 @@ public class Chunk {
 	 */
 	private int displayList = -1;
 	
+	/**
+	 * The Vertex Buffer Object ID that is exposed from openGL
+	 */
 	private int vertexBufferId = -1;
+	
+	/**
+	 * The Index Buffer Object ID that is exposed from openGL
+	 */
 	private int indexBufferId = -1;
+	
+	/**
+	 * The indexID when filling the index buffer.  Please note, that this
+	 * is also used to act as the highest number inside of the index list
+	 * and is used when actually drawing the elements for the max. index id used
+	 */
 	private int indexID = 0;
 	
 	/**
@@ -314,7 +326,6 @@ public class Chunk {
 				for (int i = 0; i < indexList.size(); i ++)
 					indexArray[i] = indexList.get(i);
 				GL.prepareStaticVBO(indexBufferId, Util.createBuffer(indexArray));
-				System.out.println(indexList.toString());
 			} else {
 				System.out.println("Updating the VBO!");
 				
@@ -345,9 +356,8 @@ public class Chunk {
 			// TODO: normals (lighting will look different ATM since normals are not sent)
 			
 			// draw!
-			//glDrawArrays(GL_TRIANGLES, 0, vertexList.size() / 3);
 			GL.bindStaticIndexBuffer(indexBufferId);
-			glDrawElements(GL_TRIANGLES, indexList.size(), GL_UNSIGNED_INT, 0);
+			glDrawRangeElements(GL_TRIANGLES, 0, indexID, indexList.size(), GL_UNSIGNED_INT, 0);
 			
 			// disable drawing
 			glDisableClientState(GL_VERTEX_ARRAY);
