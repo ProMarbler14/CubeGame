@@ -24,6 +24,8 @@ import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
+
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 
 import math.Vector3;
@@ -224,10 +226,12 @@ public class Chunk {
 				textureList.add(textCord.x);
 				textureList.add(textCord.y);
 			}
-		} else {
-			// yay, VBOs :D
-			// TODO: index buffers, actually maybe not....dunno yet, oh well
-			// 0, 1, 2, 2, 3, 0
+		} else {			
+			// normal
+			float normals[] = Cube.normals[side];
+			normalList.add(normals[0]);
+			normalList.add(normals[1]);
+			normalList.add(normals[2]);
 			
 			// point 0
 			vertexList.add(buffer[0] + position.x + x);
@@ -315,11 +319,33 @@ public class Chunk {
 				vertexBufferId = GL.genVBO();
 				indexBufferId = GL.genVBO();
 				
-				// prepare the buffer for vertices
-				float array[] = new float[vertexList.size()];
-				for (int i = 0; i < vertexList.size(); i ++)
-					array[i] = vertexList.get(i);
-				GL.prepareStaticVBO(vertexBufferId, Util.createBuffer(array));
+				// prepare the vertex buffer
+				int bufferSize = vertexList.size() + (normalList.size() * 4);
+				float buffer[] = new float[bufferSize];
+				int index = 0;
+				int normalIndex = 0;
+				int tracker = 0;
+				for (int i = 0; i < bufferSize; i += 6) {
+					// first the vertex
+					buffer[i]     = vertexList.get(index);
+					buffer[i + 1] = vertexList.get(index + 1);
+					buffer[i + 2] = vertexList.get(index + 2);
+					
+					// and now, the normal
+					buffer[i + 3] = normalList.get(normalIndex);
+					buffer[i + 4] = normalList.get(normalIndex + 1);
+					buffer[i + 5] = normalList.get(normalIndex + 2);
+					
+					index += 3;
+					
+					// we have to duplicate normals for 4 verts
+					tracker ++;
+					if (tracker == 4) {
+						normalIndex += 3;
+						tracker = 0;
+					}
+				}
+				GL.prepareStaticVBO(vertexBufferId, Util.createBuffer(buffer));
 				
 				// prepare the buffer for indices
 				int indexArray[] = new int[indexList.size()];
@@ -348,10 +374,16 @@ public class Chunk {
 			
 			// enable drawing
 			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_NORMAL_ARRAY);
 			
 			// bind the VBO and tell openGL the vertex pointer offset
 			GL.bindStaticBuffer(vertexBufferId);
-			glVertexPointer(3, GL_FLOAT, 0, 0);
+			
+			// 3 floats * 4 vertices * 4 bytes per float = 48 + 1 normal = 60
+			glVertexPointer(3, GL_FLOAT, 24, (long)0);
+			
+			//
+			glNormalPointer(GL_FLOAT, 24, (long)12);
 			
 			// TODO: normals (lighting will look different ATM since normals are not sent)
 			
@@ -360,6 +392,7 @@ public class Chunk {
 			glDrawRangeElements(GL_TRIANGLES, 0, indexID, indexList.size(), GL_UNSIGNED_INT, 0);
 			
 			// disable drawing
+			glDisableClientState(GL_NORMAL_ARRAY);
 			glDisableClientState(GL_VERTEX_ARRAY);
 		}
 	}
