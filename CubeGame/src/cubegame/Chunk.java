@@ -22,6 +22,7 @@ package cubegame;
 
 import java.util.ArrayList;
 
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.util.vector.Vector2f;
 
@@ -52,6 +53,11 @@ public class Chunk {
 	private ArrayList<Float> textureList;
 	
 	/**
+	 * Index list for index'd triangles
+	 */
+	private ArrayList<Integer> indexList;
+	
+	/**
 	 * The global world position of the chunk
 	 */
 	private Vector3 position;
@@ -62,6 +68,8 @@ public class Chunk {
 	private int displayList = -1;
 	
 	private int vertexBufferId = -1;
+	private int indexBufferId = -1;
+	private int indexID = 0;
 	
 	/**
 	 * Creates a chunk of the size CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE
@@ -69,9 +77,12 @@ public class Chunk {
 	 * of cube inside of chunk at local position <0, 0, 0>
 	 */
 	public Chunk(Vector3 position) {
+		// someone tell me to optimize this before your computer runs out of ram
 		vertexList = new ArrayList<Float>();
 		normalList = new ArrayList<Float>();
 		textureList = new ArrayList<Float>();
+		indexList = new ArrayList<Integer>();
+		
 		cubeList = new short[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 		this.position = position;
 		createChunk();
@@ -216,22 +227,24 @@ public class Chunk {
 			vertexList.add(buffer[4] + position.y + y);
 			vertexList.add(buffer[5] + position.z + z);
 			
-			// point 2 (2 times for winding indicies....gotta keep em seperate cuz of normals and coords and stuff)
-			for (int i = 0; i < 2; i ++) {
-				vertexList.add(buffer[6] + position.x + x);
-				vertexList.add(buffer[7] + position.y + y);
-				vertexList.add(buffer[8] + position.z + z);
-			}
+			// point 2 
+			vertexList.add(buffer[6] + position.x + x);
+			vertexList.add(buffer[7] + position.y + y);
+			vertexList.add(buffer[8] + position.z + z);
 			
 			// point 3
 			vertexList.add(buffer[9]  + position.x + x);
 			vertexList.add(buffer[10] + position.y + y);
 			vertexList.add(buffer[11] + position.z + z);
 			
-			// point 0 (again)
-			vertexList.add(buffer[0] + position.x + x);
-			vertexList.add(buffer[1] + position.y + y);
-			vertexList.add(buffer[2] + position.z + z);			
+			// index! (6 indicies, goes 0 1 2 2 3 0)
+			indexList.add(indexID);
+			indexList.add(indexID + 1);
+			indexList.add(indexID + 2);
+			indexList.add(indexID + 2);
+			indexList.add(indexID + 3);
+			indexList.add(indexID);
+			indexID += 4;
 		}
 	}
 
@@ -288,17 +301,24 @@ public class Chunk {
 				
 				// create the buffer
 				vertexBufferId = GL.genVBO();
+				indexBufferId = GL.genVBO();
 				
-				// prepare the buffer
+				// prepare the buffer for vertices
 				float array[] = new float[vertexList.size()];
 				for (int i = 0; i < vertexList.size(); i ++)
 					array[i] = vertexList.get(i);
 				GL.prepareStaticVBO(vertexBufferId, Util.createBuffer(array));
 				
+				// prepare the buffer for indices
+				int indexArray[] = new int[indexList.size()];
+				for (int i = 0; i < indexList.size(); i ++)
+					indexArray[i] = indexList.get(i);
+				GL.prepareStaticVBO(indexBufferId, Util.createBuffer(indexArray));
+				System.out.println(indexList.toString());
 			} else {
 				System.out.println("Updating the VBO!");
 				
-				// todo
+				// TODO
 			}
 		}
 	}
@@ -325,7 +345,9 @@ public class Chunk {
 			// TODO: normals (lighting will look different ATM since normals are not sent)
 			
 			// draw!
-			glDrawArrays(GL_TRIANGLES, 0, vertexList.size() / 3);
+			//glDrawArrays(GL_TRIANGLES, 0, vertexList.size() / 3);
+			GL.bindStaticIndexBuffer(indexBufferId);
+			glDrawElements(GL_TRIANGLES, indexList.size(), GL_UNSIGNED_INT, 0);
 			
 			// disable drawing
 			glDisableClientState(GL_VERTEX_ARRAY);
