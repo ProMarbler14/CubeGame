@@ -36,4 +36,4 @@ Glenn Smith
 License:
 ========
 
-GNU GPL Version 3.0
+3-Clause BSD License
