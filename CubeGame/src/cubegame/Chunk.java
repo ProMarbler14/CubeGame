@@ -81,11 +81,6 @@ public class Chunk {
 	private Vector3f position;
 	
 	/**
-	 * The display list id if display lists are used
-	 */
-	private int displayList = -1;
-	
-	/**
 	 * The Vertex Buffer Object ID that is exposed from openGL
 	 */
 	private int vertexBufferId = -1;
@@ -101,6 +96,11 @@ public class Chunk {
 	 * and is used when actually drawing the elements for the max. index id used
 	 */
 	private int indexID = 0;
+	
+	/**
+	 * The amount of indices
+	 */
+	private int amountOfIndices = 0;
 	
 	// buffers for legacy openGL
 	private FloatBuffer vertexArrayBuffer;
@@ -303,6 +303,8 @@ public class Chunk {
 			normalArrayBuffer = Util.createBuffer(normalArray);
 			textureArrayBuffer = Util.createBuffer(textureArray);
 			indexArrayBuffer = Util.createBuffer(indexArray);
+			
+			amountOfIndices = indexList.size();
 		} else {
 			System.out.println("Preparing the chunk VBO!");
 			
@@ -354,12 +356,24 @@ public class Chunk {
 				for (int i = 0; i < indexList.size(); i ++)
 					indexArray[i] = indexList.get(i);
 				GL.prepareStaticVBO(indexBufferId, Util.createBuffer(indexArray));
+				
+				amountOfIndices = indexList.size();
+				
+				// make the GC grab our extra copies of ram
+				buffer = null;
+				indexArray = null;
 			} else {
 				System.out.println("Updating the VBO!");
 				
 				// TODO
 			}
 		}
+		
+		// FREE THE RAM!
+		vertexList.clear();
+		indexList.clear();
+		textureList.clear();
+		normalList.clear();
 	}
 	
 	/**
@@ -386,7 +400,7 @@ public class Chunk {
 			
 			// draw!
 			GL.bindStaticIndexBuffer(indexBufferId);
-			glDrawRangeElements(GL_TRIANGLES, 0, indexID, indexList.size(), GL_UNSIGNED_INT, 0);
+			glDrawRangeElements(GL_TRIANGLES, 0, indexID, amountOfIndices, GL_UNSIGNED_INT, 0);
 		}
 	}
 	
