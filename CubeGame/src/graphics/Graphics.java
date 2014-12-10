@@ -68,8 +68,6 @@ public final class Graphics {
 			// initialize the camera
 			camera = new Camera();
 			
-			// create a chunk!
-			World.addChunk(new Chunk(new Vector3f(0.0f, 0.0f, 0.0f)));
 		} catch (LWJGLException e) {
 			destroy();
 			System.exit(1);

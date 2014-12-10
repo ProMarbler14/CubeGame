@@ -48,7 +48,7 @@ import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector2f;
 
 public class Chunk {	
-	public final int CHUNK_SIZE = 16;
+	public static final int CHUNK_SIZE = 16;
 	
 	/**
 	 * cubeList holds each cube's type (grass, air, ect)
@@ -133,10 +133,17 @@ public class Chunk {
 		for (int x = 0; x < CHUNK_SIZE; x ++) {
 			for (int z = 0; z < CHUNK_SIZE; z ++) {
 				for (int y = 0; y < CHUNK_SIZE; y ++) {
+					if ((x + y + z) % 2 == 0) {
+						cubeList[x][y][z] = Cube.AIR;
+						continue;
+					}
+					
 					if (y == CHUNK_SIZE - 1)
-						cubeList[x][y][z] = Cube.COBBLE;
-					else
+						cubeList[x][y][z] = Cube.GRASS;
+					else if (y > 10)
 						cubeList[x][y][z] = Cube.DIRT;
+					else
+						cubeList[x][y][z] = Cube.COBBLE;
 				}
 			}
 		}

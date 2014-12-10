@@ -43,6 +43,7 @@ import graphics.GL;
 
 import java.util.ArrayList;
 
+import org.lwjgl.util.vector.Vector3f;
 import org.newdawn.slick.opengl.Texture;
 
 public class World {
@@ -60,6 +61,13 @@ public class World {
 	public static void init() {
 		// map the texture
 		mapTexture = Util.loadTexture("res/textures/texturemap.png", "PNG");
+		
+		// create some chunks
+		for (int x = -4; x < 4; x ++) {
+			for (int z = -4; z < 4; z ++) {
+				World.addChunk(new Chunk(new Vector3f((float)(x * (float)Chunk.CHUNK_SIZE), 0.0f, (float)(z * (float)Chunk.CHUNK_SIZE))));
+			}
+		}
 	}
 
 	/**
