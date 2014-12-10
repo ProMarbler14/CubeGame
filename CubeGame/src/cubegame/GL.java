@@ -89,14 +89,16 @@ public final class GL {
 	/**
 	 * Internal use only
 	 * True if the GL version doesn't support VBOs.  Then we rely on immediate mode + displayLists
+	 * @deprecated
 	 */
 	private static boolean useImmediateMode = false;
 	
 	/**
 	 * Internal use only
-	 * True if the GL context supports some form of VBOs
+	 * True if the GL context is a legacy openGL context. Legacy is the last resort context
+	 * that is 100% fixed function pipeline with no vbo extensions.  All client vertex arrays.
 	 */
-	private static boolean supportsVBO = false;
+	private static boolean isLegacy = false;
 	
 	/**
 	 * Stores display lists and cleans them up at the end
@@ -142,18 +144,16 @@ public final class GL {
 		if (majorVersion >= 2) {
 			supportsOpenGL20 = true;
 			supportsOpenGL15 = true;
-			supportsVBO = true;
 		} else if (majorVersion == 1) {
 			if (minorVersion >= 5) {
 				supportsOpenGL15 = true;
-				supportsVBO = true;
 			} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
 				supportsARBVBO = true;
-				supportsVBO = true;
 			} else {
 				// old powerpc macs probably? tehehe
 				// I'LL SUPPORT THEM FOREVERRR
 				useImmediateMode = true;
+				isLegacy = true;
 			}
 		}
 	}
@@ -283,11 +283,13 @@ public final class GL {
 	}
 	
 	/**
-	 * Checks to see if the GL is using immediate rendering mode
-	 * @return true if the GL context is rendering using immediate mode
+	 * Checks to see if the GL is rendering with a legacy context.
+	 * A legacy context is Fixed-Function Pipeline OpenGL with no
+	 * vertex buffers. The only requirement is at least GL 1.2
+	 * @return true if the GL is a legacy context
 	 */
-	public static boolean isImmediateMode() {
-		return useImmediateMode;
+	public static boolean isLegacy() {
+		return isLegacy;
 	}
 	
 	/**

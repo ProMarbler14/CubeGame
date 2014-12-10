@@ -72,10 +72,6 @@ public final class Graphics {
 			
 			// create a chunk!
 			World.addChunk(new Chunk(new Vector3(0.0f, 0.0f, 0.0f)));
-			
-			// test immediate mode
-			//GLTest.prepareImmediateMode();
-			
 		} catch (LWJGLException e) {
 			destroy();
 			System.exit(1);
@@ -98,9 +94,6 @@ public final class Graphics {
 		camera.applyMotion(Input.getHorizontal() * dt, 0, Input.getVertical() * dt);
 		camera.applyRotation(Input.getPitch(), Input.getYaw());
 		camera.update();
-		
-		// test immediate mode
-		//GLTest.renderImmediateMod();
 		
 		// render the world
 		World.render();

@@ -198,7 +198,7 @@ public class Chunk {
 	private void buildFace(float x, float y, float z, int side, short material) {
 		float buffer[] = Cube.vertices[side];
 		
-		if (GL.isImmediateMode()) {
+		if (GL.isLegacy()) {
 			// 0, 1, 2, 2, 3, 0
 			
 			// point 0
@@ -291,7 +291,7 @@ public class Chunk {
 	 * (as the displayList / VBO needs updated)
 	 */
 	private void preRenderChunk() {
-		if (GL.isImmediateMode()) {
+		if (GL.isLegacy()) {
 			System.out.println("Preparing the chunk Display List!");
 			// generate a new display list, if one already exists, delete it and make a new one since
 			// the block has been updated
@@ -391,7 +391,7 @@ public class Chunk {
 	 * Renders the chunk
 	 */
 	public void render() {
-		if (GL.isImmediateMode()) {
+		if (GL.isLegacy()) {
 			// render the display list!
 			glCallList(displayList);
 		} else {

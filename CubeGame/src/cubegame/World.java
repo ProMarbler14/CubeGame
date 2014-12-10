@@ -70,7 +70,7 @@ public class World {
 
 		// enable the pointers, so we don't have to do this for every chunk
 		// TODO: once display lists are gone, remove the if check
-		if (!GL.isImmediateMode()) {
+		if (!GL.isLegacy()) {
 			// enable drawing
 			glEnableClientState(GL_VERTEX_ARRAY);
 			glEnableClientState(GL_NORMAL_ARRAY);
@@ -86,7 +86,7 @@ public class World {
 		
 		// and disable them
 		// TODO: once display lists are gone, remove the if check
-		if (!GL.isImmediateMode()) {
+		if (!GL.isLegacy()) {
 			// disable drawing
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 			glDisableClientState(GL_NORMAL_ARRAY);
