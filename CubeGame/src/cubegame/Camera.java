@@ -47,8 +47,6 @@ import org.lwjgl.util.vector.Matrix;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
-import math.Vector3;
-
 public class Camera {
 	/**
 	 * The 3D position of the camera

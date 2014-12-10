@@ -44,9 +44,8 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector2f;
-
-import math.Vector3;
 
 public class Chunk {	
 	public final int CHUNK_SIZE = 16;
@@ -79,7 +78,7 @@ public class Chunk {
 	/**
 	 * The global world position of the chunk
 	 */
-	private Vector3 position;
+	private Vector3f position;
 	
 	/**
 	 * The display list id if display lists are used
@@ -114,7 +113,7 @@ public class Chunk {
 	 * @param position the world position of the cube, representing position
 	 * of cube inside of chunk at local position <0, 0, 0>
 	 */
-	public Chunk(Vector3 position) {
+	public Chunk(Vector3f position) {
 		// someone tell me to optimize this before your computer runs out of ram
 		vertexList = new ArrayList<Float>();
 		normalList = new ArrayList<Float>();
@@ -389,7 +388,7 @@ public class Chunk {
 	 * @param position the local position of the cube to modify
 	 * @param material the kind of material to use
 	 */
-	public void setCube(Vector3 position, short material) {
+	public void setCube(Vector3f position, short material) {
 		cubeList[(int)position.x][(int)position.y][(int)position.z] = material;
 		
 		// re-create the display list or VBO

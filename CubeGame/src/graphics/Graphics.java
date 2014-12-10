@@ -34,15 +34,12 @@
 
 package graphics;
 
-import math.Vector3;
-
 import org.lwjgl.LWJGLException;
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.util.vector.Vector3f;
 
 import cubegame.*;
-
 import static org.lwjgl.opengl.GL11.*;
 
 public final class Graphics {
@@ -72,7 +69,7 @@ public final class Graphics {
 			camera = new Camera();
 			
 			// create a chunk!
-			World.addChunk(new Chunk(new Vector3(0.0f, 0.0f, 0.0f)));
+			World.addChunk(new Chunk(new Vector3f(0.0f, 0.0f, 0.0f)));
 		} catch (LWJGLException e) {
 			destroy();
 			System.exit(1);
