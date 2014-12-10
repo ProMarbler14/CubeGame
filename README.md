@@ -8,6 +8,8 @@ Dependencies:
 
 lwjgl 2.9.1 (http://legacy.lwjgl.org/download.php)
 
+Slick2D (http://slick.ninjacave.com)
+
 Planned Operating Systems:
 =============
 
