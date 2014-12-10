@@ -69,6 +69,7 @@ public class World {
 		mapTexture.bind();
 
 		// enable the pointers, so we don't have to do this for every chunk
+		// TODO: once display lists are gone, remove the if check
 		if (!GL.isImmediateMode()) {
 			// enable drawing
 			glEnableClientState(GL_VERTEX_ARRAY);
@@ -84,6 +85,7 @@ public class World {
 		}
 		
 		// and disable them
+		// TODO: once display lists are gone, remove the if check
 		if (!GL.isImmediateMode()) {
 			// disable drawing
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
