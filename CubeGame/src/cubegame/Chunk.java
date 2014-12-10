@@ -34,6 +34,8 @@
 
 package cubegame;
 
+import graphics.GL;
+
 import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;

@@ -32,7 +32,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-package cubegame;
+package graphics;
 
 import math.Vector3;
 
@@ -41,6 +41,10 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
+import cubegame.Camera;
+import cubegame.Chunk;
+import cubegame.Input;
+import cubegame.World;
 import test.GLTest;
 import static org.lwjgl.opengl.GL11.*;
 

@@ -32,7 +32,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-package cubegame;
+package graphics;
 
 /**
  * OpenGL includes
@@ -50,6 +50,8 @@ import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import org.lwjgl.BufferUtils;
+
+import cubegame.Util;
 
 /**
  * The GL class is a higher level API that is responsible

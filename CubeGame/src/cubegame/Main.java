@@ -34,6 +34,8 @@
 
 package cubegame;
 
+import graphics.Graphics;
+
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 

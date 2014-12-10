@@ -36,6 +36,7 @@ package cubegame;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.util.glu.GLU.*;
+import graphics.Graphics;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
