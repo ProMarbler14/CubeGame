@@ -395,13 +395,7 @@ public class Chunk {
 			// render the display list!
 			glCallList(displayList);
 		} else {
-			// render VBO
-
-			// enable drawing
-			glEnableClientState(GL_VERTEX_ARRAY);
-			glEnableClientState(GL_NORMAL_ARRAY);
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			
+			// render VBO			
 			// bind the VBO and tell openGL the vertex pointer offset
 			GL.bindStaticBuffer(vertexBufferId);
 			
@@ -415,11 +409,6 @@ public class Chunk {
 			// draw!
 			GL.bindStaticIndexBuffer(indexBufferId);
 			glDrawRangeElements(GL_TRIANGLES, 0, indexID, indexList.size(), GL_UNSIGNED_INT, 0);
-			
-			// disable drawing
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			glDisableClientState(GL_NORMAL_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
 		}
 	}
 	

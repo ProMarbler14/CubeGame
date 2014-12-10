@@ -34,6 +34,12 @@
 
 package cubegame;
 
+import static org.lwjgl.opengl.GL11.GL_NORMAL_ARRAY;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_COORD_ARRAY;
+import static org.lwjgl.opengl.GL11.GL_VERTEX_ARRAY;
+import static org.lwjgl.opengl.GL11.glDisableClientState;
+import static org.lwjgl.opengl.GL11.glEnableClientState;
+
 import java.util.ArrayList;
 
 import org.newdawn.slick.opengl.Texture;
@@ -61,12 +67,28 @@ public class World {
 	public static void render() {
 		// bind the opengl texture
 		mapTexture.bind();
+
+		// enable the pointers, so we don't have to do this for every chunk
+		if (!GL.isImmediateMode()) {
+			// enable drawing
+			glEnableClientState(GL_VERTEX_ARRAY);
+			glEnableClientState(GL_NORMAL_ARRAY);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		}
 		
 		// draw all chunks
 		for (Chunk chunk : chunkList) {
 			// TODO:
 			// check to see if chunk is inside of camera's view frustrum
 			chunk.render();
+		}
+		
+		// and disable them
+		if (!GL.isImmediateMode()) {
+			// disable drawing
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glDisableClientState(GL_NORMAL_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);			
 		}
 	}
 	
