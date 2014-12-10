@@ -137,20 +137,20 @@ public final class GL {
 		// texturing:
 		glEnable(GL_TEXTURE_2D);
 		
-		//if (majorVersion >= 2) {
-			//supportsOpenGL20 = true;
-			//supportsOpenGL15 = true;
-		//} else if (majorVersion == 1) {
-			//if (minorVersion >= 5) {
-				//supportsOpenGL15 = true;
-			//} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
-				//supportsARBVBO = true;
-			//} else {
+		if (majorVersion >= 2) {
+			supportsOpenGL20 = true;
+			supportsOpenGL15 = true;
+		} else if (majorVersion == 1) {
+			if (minorVersion >= 5) {
+				supportsOpenGL15 = true;
+			} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
+				supportsARBVBO = true;
+			} else {
 				// old powerpc macs probably? tehehe
 				// I'LL SUPPORT THEM FOREVERRR
 				isLegacy = true;
-			//}
-		//}
+			}
+		}
 	}
 	
 	/**
