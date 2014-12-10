@@ -40,6 +40,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 
 import org.lwjgl.BufferUtils;
 import org.newdawn.slick.opengl.Texture;
@@ -65,6 +66,16 @@ public class Util {
 	 */
 	public static IntBuffer createBuffer(int data[]) {
 		return (IntBuffer)BufferUtils.createIntBuffer(data.length).put(data).rewind();
+	}
+	
+	/**
+	 * Creates an short buffer for the given data, all rewound and everything.  Perfect for
+	 * passing into OpenGL.
+	 * @param data The short[] data to use
+	 * @return The converted integer array to buffers
+	 */
+	public static ShortBuffer createBuffer(short data[]) {
+		return (ShortBuffer)BufferUtils.createShortBuffer(data.length).put(data).rewind();
 	}
 	
 	/**

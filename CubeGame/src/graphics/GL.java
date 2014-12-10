@@ -46,6 +46,7 @@ import org.lwjgl.opengl.GLContext;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
 import org.lwjgl.BufferUtils;
@@ -195,13 +196,13 @@ public final class GL {
 	}
 	
 	/**
-	 * prepares a static vertex buffer object of integers
+	 * prepares a static vertex buffer object of shorts for an Index Buffer
 	 * 
 	 * @param id the VBO id
-	 * @param data (integers) the data to be pushed into the VBO
+	 * @param data (shorts) the data to be pushed into the VBO
 	 * @see float method
 	 */
-	public static void prepareStaticVBO(int id, IntBuffer buffer) {
+	public static void prepareStaticVBO(int id, ShortBuffer buffer) {
 		if (supportsOpenGL15) {
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);

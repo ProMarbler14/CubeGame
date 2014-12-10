@@ -38,12 +38,12 @@ import graphics.GL;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.*;
 
-import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector2f;
 
@@ -73,7 +73,7 @@ public class Chunk {
 	/**
 	 * Index list for index'd triangles
 	 */
-	private ArrayList<Integer> indexList;
+	private ArrayList<Short> indexList;
 	
 	/**
 	 * The global world position of the chunk
@@ -95,7 +95,7 @@ public class Chunk {
 	 * is also used to act as the highest number inside of the index list
 	 * and is used when actually drawing the elements for the max. index id used
 	 */
-	private int indexID = 0;
+	private short indexID = 0;
 	
 	/**
 	 * The amount of indices
@@ -106,7 +106,7 @@ public class Chunk {
 	private FloatBuffer vertexArrayBuffer;
 	private FloatBuffer normalArrayBuffer;
 	private FloatBuffer textureArrayBuffer;
-	private IntBuffer indexArrayBuffer;
+	private ShortBuffer indexArrayBuffer;
 	
 	/**
 	 * Creates a chunk of the size CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE
@@ -118,7 +118,7 @@ public class Chunk {
 		vertexList = new ArrayList<Float>();
 		normalList = new ArrayList<Float>();
 		textureList = new ArrayList<Float>();
-		indexList = new ArrayList<Integer>();
+		indexList = new ArrayList<Short>();
 		
 		cubeList = new short[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 		this.position = position;
@@ -249,10 +249,10 @@ public class Chunk {
 		
 		// index! (6 indices, goes 0 1 2 2 3 0)
 		indexList.add(indexID);
-		indexList.add(indexID + 1);
-		indexList.add(indexID + 2);
-		indexList.add(indexID + 2);
-		indexList.add(indexID + 3);
+		indexList.add((short) (indexID + 1));
+		indexList.add((short) (indexID + 2));
+		indexList.add((short) (indexID + 2));
+		indexList.add((short) (indexID + 3));
 		indexList.add(indexID);
 		indexID += 4;
 	}
@@ -272,7 +272,7 @@ public class Chunk {
 				vertexArray[i] = vertexList.get(i);
 			
 			// index array
-			int indexArray[] = new int[indexList.size()];
+			short indexArray[] = new short[indexList.size()];
 			for (int i = 0; i < indexList.size(); i ++)
 				indexArray[i] = indexList.get(i);
 			
@@ -352,7 +352,7 @@ public class Chunk {
 				GL.prepareStaticVBO(vertexBufferId, Util.createBuffer(buffer));
 				
 				// prepare the buffer for indices
-				int indexArray[] = new int[indexList.size()];
+				short indexArray[] = new short[indexList.size()];
 				for (int i = 0; i < indexList.size(); i ++)
 					indexArray[i] = indexList.get(i);
 				GL.prepareStaticVBO(indexBufferId, Util.createBuffer(indexArray));
@@ -400,7 +400,7 @@ public class Chunk {
 			
 			// draw!
 			GL.bindStaticIndexBuffer(indexBufferId);
-			glDrawRangeElements(GL_TRIANGLES, 0, indexID, amountOfIndices, GL_UNSIGNED_INT, 0);
+			glDrawRangeElements(GL_TRIANGLES, 0, (int)indexID, amountOfIndices, GL_UNSIGNED_SHORT, 0);
 		}
 	}
 	
