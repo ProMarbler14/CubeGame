@@ -36,6 +36,8 @@ package cubegame;
 
 import graphics.GL;
 
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -100,6 +102,12 @@ public class Chunk {
 	 * and is used when actually drawing the elements for the max. index id used
 	 */
 	private int indexID = 0;
+	
+	// buffers for legacy openGL
+	private FloatBuffer vertexArrayBuffer;
+	private FloatBuffer normalArrayBuffer;
+	private FloatBuffer textureArrayBuffer;
+	private IntBuffer indexArrayBuffer;
 	
 	/**
 	 * Creates a chunk of the size CHUNK_SIZE * CHUNK_SIZE * CHUNK_SIZE
@@ -200,91 +208,47 @@ public class Chunk {
 	private void buildFace(float x, float y, float z, int side, short material) {
 		float buffer[] = Cube.vertices[side];
 		
-		if (GL.isLegacy()) {
-			// 0, 1, 2, 2, 3, 0
-			
-			// point 0
-			vertexList.add(buffer[0] + position.x + x);
-			vertexList.add(buffer[1] + position.y + y);
-			vertexList.add(buffer[2] + position.z + z);
-			
-			// point 1
-			vertexList.add(buffer[3] + position.x + x);
-			vertexList.add(buffer[4] + position.y + y);
-			vertexList.add(buffer[5] + position.z + z);
-			
-			// point 2 (2 times for winding indicies....gotta keep em seperate cuz of normals and coords and stuff)
-			for (int i = 0; i < 2; i ++) {
-				vertexList.add(buffer[6] + position.x + x);
-				vertexList.add(buffer[7] + position.y + y);
-				vertexList.add(buffer[8] + position.z + z);
-			}
-			
-			// point 3
-			vertexList.add(buffer[9]  + position.x + x);
-			vertexList.add(buffer[10] + position.y + y);
-			vertexList.add(buffer[11] + position.z + z);
-			
-			// point 0 (again)
-			vertexList.add(buffer[0] + position.x + x);
-			vertexList.add(buffer[1] + position.y + y);
-			vertexList.add(buffer[2] + position.z + z);
-			
-			// normal
-			float normals[] = Cube.normals[side];
-			normalList.add(normals[0]);
-			normalList.add(normals[1]);
-			normalList.add(normals[2]);
-			
-			// build texture coordinates
-			Vector2f coords[] = Cube.getUVTextureMap(material, World.mapTextureWidth, World.mapTextureHeight);
-			for (Vector2f textCord : coords) {
-				textureList.add(textCord.x);
-				textureList.add(textCord.y);
-			}
-		} else {			
-			// normal
-			float normals[] = Cube.normals[side];
-			normalList.add(normals[0]);
-			normalList.add(normals[1]);
-			normalList.add(normals[2]);
-			
-			// build texture coordinates
-			Vector2f coords[] = Cube.getUVTextureMapD(material, World.mapTextureWidth, World.mapTextureHeight);
-			for (Vector2f textCord : coords) {
-				textureList.add(textCord.x);
-				textureList.add(textCord.y);
-			}
-			
-			// point 0
-			vertexList.add(buffer[0] + position.x + x);
-			vertexList.add(buffer[1] + position.y + y);
-			vertexList.add(buffer[2] + position.z + z);
-			
-			// point 1
-			vertexList.add(buffer[3] + position.x + x);
-			vertexList.add(buffer[4] + position.y + y);
-			vertexList.add(buffer[5] + position.z + z);
-			
-			// point 2 
-			vertexList.add(buffer[6] + position.x + x);
-			vertexList.add(buffer[7] + position.y + y);
-			vertexList.add(buffer[8] + position.z + z);
-			
-			// point 3
-			vertexList.add(buffer[9]  + position.x + x);
-			vertexList.add(buffer[10] + position.y + y);
-			vertexList.add(buffer[11] + position.z + z);
-			
-			// index! (6 indicies, goes 0 1 2 2 3 0)
-			indexList.add(indexID);
-			indexList.add(indexID + 1);
-			indexList.add(indexID + 2);
-			indexList.add(indexID + 2);
-			indexList.add(indexID + 3);
-			indexList.add(indexID);
-			indexID += 4;
+		// normal
+		float normals[] = Cube.normals[side];
+		normalList.add(normals[0]);
+		normalList.add(normals[1]);
+		normalList.add(normals[2]);
+		
+		// build texture coordinates
+		Vector2f coords[] = Cube.getUVTextureMapD(material, World.mapTextureWidth, World.mapTextureHeight);
+		for (Vector2f textCord : coords) {
+			textureList.add(textCord.x);
+			textureList.add(textCord.y);
 		}
+		
+		// point 0
+		vertexList.add(buffer[0] + position.x + x);
+		vertexList.add(buffer[1] + position.y + y);
+		vertexList.add(buffer[2] + position.z + z);
+		
+		// point 1
+		vertexList.add(buffer[3] + position.x + x);
+		vertexList.add(buffer[4] + position.y + y);
+		vertexList.add(buffer[5] + position.z + z);
+		
+		// point 2 
+		vertexList.add(buffer[6] + position.x + x);
+		vertexList.add(buffer[7] + position.y + y);
+		vertexList.add(buffer[8] + position.z + z);
+		
+		// point 3
+		vertexList.add(buffer[9]  + position.x + x);
+		vertexList.add(buffer[10] + position.y + y);
+		vertexList.add(buffer[11] + position.z + z);
+		
+		// index! (6 indices, goes 0 1 2 2 3 0)
+		indexList.add(indexID);
+		indexList.add(indexID + 1);
+		indexList.add(indexID + 2);
+		indexList.add(indexID + 2);
+		indexList.add(indexID + 3);
+		indexList.add(indexID);
+		indexID += 4;
 	}
 
 	/**
@@ -294,42 +258,45 @@ public class Chunk {
 	 */
 	private void preRenderChunk() {
 		if (GL.isLegacy()) {
-			System.out.println("Preparing the chunk Display List!");
-			// generate a new display list, if one already exists, delete it and make a new one since
-			// the block has been updated
-			// a display list that = -1 was never set
-			if (displayList != -1)
-				GL.deleteDisplayList(displayList);
-			displayList = GL.genDisplayList();
-			glNewList(displayList, GL_COMPILE);
-			glBegin(GL_TRIANGLES);
-				// with display list, you have to re-do the whole displayList :(
-				int size = vertexList.size();
-				int normal = 0;
-				int textCoords = 0;
-				for (int i = 0; i < size; i += 18) {					
-					// ADD THE NORMAL	
-					glNormal3f(normalList.get(normal), normalList.get(normal + 1), normalList.get(normal + 2));
-					normal += 3;
-					
-					// and the vertices and coords
-					glTexCoord2f(textureList.get(textCoords), textureList.get(textCoords + 1));
-					glVertex3f(vertexList.get(i), vertexList.get(i + 1), vertexList.get(i + 2));
-					glTexCoord2f(textureList.get(textCoords + 2), textureList.get(textCoords + 3));
-					glVertex3f(vertexList.get(i + 3), vertexList.get(i + 4), vertexList.get(i + 5));
-					glTexCoord2f(textureList.get(textCoords + 4), textureList.get(textCoords + 5));
-					glVertex3f(vertexList.get(i + 6), vertexList.get(i + 7), vertexList.get(i + 8));
-					glTexCoord2f(textureList.get(textCoords + 6), textureList.get(textCoords + 7));
-					glVertex3f(vertexList.get(i + 9), vertexList.get(i + 10), vertexList.get(i + 11));
-					glTexCoord2f(textureList.get(textCoords + 8), textureList.get(textCoords + 9));
-					glVertex3f(vertexList.get(i + 12), vertexList.get(i + 13), vertexList.get(i + 14));
-					glTexCoord2f(textureList.get(textCoords + 10), textureList.get(textCoords + 11));
-					glVertex3f(vertexList.get(i + 15), vertexList.get(i + 16), vertexList.get(i + 17));
-					
-					textCoords += 12;
+			System.out.println("Legacy GL: Preparing the chunk Vertex Array!");
+			
+			// vertex array
+			float vertexArray[] = new float[vertexList.size()];
+			for (int i = 0; i < vertexList.size(); i ++)
+				vertexArray[i] = vertexList.get(i);
+			
+			// index array
+			int indexArray[] = new int[indexList.size()];
+			for (int i = 0; i < indexList.size(); i ++)
+				indexArray[i] = indexList.get(i);
+			
+			// normal array
+			int normalIndex = 0;
+			int tracker = 0;
+			float normalArray[] = new float[normalList.size() * 4];
+			for (int i = 0; i < normalList.size() * 4; i += 3) {
+				normalArray[i]     = normalList.get(normalIndex);
+				normalArray[i + 1] = normalList.get(normalIndex + 1);
+				normalArray[i + 2] = normalList.get(normalIndex + 2);
+				
+				// we have to duplicate normals for 4 verts
+				tracker ++;
+				if (tracker == 4) {
+					normalIndex += 3;
+					tracker = 0;
 				}
-			glEnd();
-			glEndList();
+			}
+			
+			// texture array
+			float textureArray[] = new float[textureList.size()];
+			for (int i = 0; i < textureList.size(); i ++)
+				textureArray[i] = textureList.get(i);
+			
+			// now create the buffers
+			vertexArrayBuffer = Util.createBuffer(vertexArray);
+			normalArrayBuffer = Util.createBuffer(normalArray);
+			textureArrayBuffer = Util.createBuffer(textureArray);
+			indexArrayBuffer = Util.createBuffer(indexArray);
 		} else {
 			System.out.println("Preparing the chunk VBO!");
 			
@@ -394,8 +361,11 @@ public class Chunk {
 	 */
 	public void render() {
 		if (GL.isLegacy()) {
-			// render the display list!
-			glCallList(displayList);
+			glVertexPointer(3, 0, vertexArrayBuffer); // 3 floats per vertex, not interleaved
+			glNormalPointer(0, normalArrayBuffer); // not interleaved
+			glTexCoordPointer(2, 0, textureArrayBuffer); // 2 floats per vertex, not interleaved
+
+			glDrawElements(GL_TRIANGLES, indexArrayBuffer);
 		} else {
 			// render VBO			
 			// bind the VBO and tell openGL the vertex pointer offset
