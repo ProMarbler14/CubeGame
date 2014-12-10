@@ -56,7 +56,7 @@ public final class Graphics {
 	public static void init(int x, int y) {
 		try {
 			Display.setDisplayMode(new DisplayMode(x, y));
-			Display.setTitle("JCraft 1.0.0 - DEV");
+			Display.setTitle("CubeGame 1.0.0 - DEV");
 			Display.create();
 			
 			// Initialize our OpenGL layer
@@ -114,8 +114,8 @@ public final class Graphics {
 	 * Checks to ensure that we have a proper min openGL version
 	 */
 	private static void checkOpenGL() {
-		if (GL.getOpenGLMajorVersion() < 2) {
-			System.err.println("You need at least OpenGL 2.0 in order to run JCraft.");
+		if (GL.getOpenGLMajorVersion() == 1 && GL.getOpenGLMinorVersion() < 1) {
+			System.err.println("You need at least OpenGL 1.1 in order to run CubeGame.");
 			System.err.println("Current OpenGL version: " + GL.getOpenGLVersion());
 			destroy();
 			System.exit(1);
