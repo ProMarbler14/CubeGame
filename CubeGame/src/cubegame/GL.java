@@ -69,13 +69,14 @@ public final class GL {
 	private static int minorVersion = 0;
 	
 	/**
-	 * Interal use only
+	 * Internal use only
 	 * True if the current context supports at least OpenGL 2.0
 	 */
+	@SuppressWarnings(value = { "unused" })
 	private static boolean supportsOpenGL20 = false;
 	
 	/**
-	 * Interal use only
+	 * Internal use only
 	 * True if the current context supports at least OpenGL 1.5
 	 */
 	private static boolean supportsOpenGL15 = false;
@@ -85,13 +86,6 @@ public final class GL {
 	 * True if the GL version is < 1.5 and the context has the vbo ARB extension
 	 */
 	private static boolean supportsARBVBO = false;
-	
-	/**
-	 * Internal use only
-	 * True if the GL version doesn't support VBOs.  Then we rely on immediate mode + displayLists
-	 * @deprecated
-	 */
-	private static boolean useImmediateMode = false;
 	
 	/**
 	 * Internal use only
@@ -152,7 +146,6 @@ public final class GL {
 			} else {
 				// old powerpc macs probably? tehehe
 				// I'LL SUPPORT THEM FOREVERRR
-				useImmediateMode = true;
 				isLegacy = true;
 			}
 		}
