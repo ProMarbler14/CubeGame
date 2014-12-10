@@ -41,11 +41,8 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
-import cubegame.Camera;
-import cubegame.Chunk;
-import cubegame.Input;
-import cubegame.World;
-import test.GLTest;
+import cubegame.*;
+
 import static org.lwjgl.opengl.GL11.*;
 
 public final class Graphics {
@@ -109,11 +106,7 @@ public final class Graphics {
 	/**
 	 * Destroys the canvas render window and shuts down the graphics library
 	 */
-	public static void destroy() {
-		
-		// cleanup immediate mode
-		//GLTest.cleanUpImmediateMode();
-		
+	public static void destroy() {		
 		// cleanup the GL
 		GL.cleanup();
 		

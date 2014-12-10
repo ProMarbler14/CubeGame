@@ -43,7 +43,6 @@ import static org.lwjgl.opengl.GL11.*;
 
 import org.lwjgl.opengl.ARBVertexBufferObject;
 import org.lwjgl.opengl.GLContext;
-import org.lwjgl.util.glu.*;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -96,13 +95,7 @@ public final class GL {
 	 * that is 100% fixed function pipeline with no vbo extensions.  All client vertex arrays.
 	 */
 	private static boolean isLegacy = false;
-	
-	/**
-	 * Stores display lists and cleans them up at the end
-	 * Since the garbage collector doesn't interfere with native and GL code
-	 */
-	private static ArrayList<Integer> displayListGC;
-	
+
 	/**
 	 * Stores VBO ids and cleans them up at the end
 	 * Since the garbage collector doesn't interfere with native and GL code
@@ -114,7 +107,6 @@ public final class GL {
 	 */
 	public static void init() {
 		initialized = true;
-		displayListGC = new ArrayList<Integer>();
 		vboGC = new ArrayList<Integer>();
 		majorVersion = Integer.parseInt(getOpenGLVersion().substring(0,1).trim());
 		minorVersion = Integer.parseInt(getOpenGLVersion().substring(2,3).trim());
@@ -159,12 +151,7 @@ public final class GL {
 	 */
 	public static void cleanup() {
 		initialized = false;
-		
-		// free all display lists
-		for (int id : displayListGC)
-			glDeleteLists(id, 1);
-		displayListGC.clear();
-		
+
 		// free all vbos
 		for (int id : vboGC) {
 			if (supportsOpenGL15)
@@ -174,27 +161,7 @@ public final class GL {
 		}
 		vboGC.clear();
 	}
-	
-	/**
-	 * Creates a display list
-	 * @return the display list id
-	 */
-	public static int genDisplayList() {
-		int list = glGenLists(1);
-		displayListGC.add(list);
-		return list;
-	}
-	
-	/**
-	 * Delete a display list from the GL
-	 * @param id the display list ID
-	 */
-	public static void deleteDisplayList(int id) {
-		// free it from ram
-		glDeleteLists(id, 1);
-		displayListGC.remove((Integer)id);
-	}
-	
+
 	/**
 	 * generates a vertex buffer object
 	 * @return the ID of the VBO, or -1 if the VBO couldn't be created
