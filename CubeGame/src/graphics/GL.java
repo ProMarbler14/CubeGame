@@ -59,11 +59,12 @@ import cubegame.Util;
  * common API.  It is responsible for maintaining an easy to
  * use graphics system.
  * 
- * Planned Support:
- * OpenGL 2.0 (VBO + Shaders)
- * OpenGL 1.5 (VBO + FFP)
- * OpenGL 1.x + ARB VBO (for ARB VBOs)
- * OpenGL 1.1+ (ImmediateMode + Display Lists)
+ * Current API's supported:
+ * 
+ * - Fixed Function Pipeline:
+ *    - GL 1.1 (Vertex Arrays)
+ *    - GL 1.x (ARB VBO required)
+ *    - GL 1.5 (Vertex Buffer Objects)
  */
 public final class GL {
 	private static boolean initialized = false;
@@ -280,7 +281,7 @@ public final class GL {
 	/**
 	 * Checks to see if the GL is rendering with a legacy context.
 	 * A legacy context is Fixed-Function Pipeline OpenGL with no
-	 * vertex buffers. The only requirement is at least GL 1.2
+	 * vertex buffers. The only requirement is at least GL 1.1
 	 * @return true if the GL is a legacy context
 	 */
 	public static boolean isLegacy() {
