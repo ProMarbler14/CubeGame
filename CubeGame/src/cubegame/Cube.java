@@ -112,6 +112,8 @@ public class Cube {
 	 * @return an array of UVs mapped from the giving texture offset
 	 * @note this guy deserves a cookie:
 	 * http://gamedev.stackexchange.com/a/48903
+	 * 
+	 * @deprecated
 	 */
 	public static Vector2f[] getUVTextureMap(short offset, int textureWidth, int textureHeight) {
 		int off = (int)offset;
@@ -129,6 +131,25 @@ public class Cube {
 		uvs[3] = new Vector2f(uOffset + xOffset, vOffset); // 1, 0 (2)
 		uvs[4] = new Vector2f(uOffset, vOffset);           // 0, 0 (3)
 		uvs[5] = new Vector2f(uOffset, vOffset + yOffset); // 0, 1 (0)
+		return uvs;
+	}
+	
+	public static Vector2f[] getUVTextureMapD(short offset, int textureWidth, int textureHeight) {
+		int off = (int)offset;
+		int u = off % textureWidth;
+		int v = off / textureHeight;
+		float xOffset = 1.0f / textureWidth;
+		float yOffset = 1.0f / textureHeight;
+		float uOffset = u * xOffset;
+		float vOffset = v * yOffset;
+		
+		Vector2f uvs[] = new Vector2f[4];
+		uvs[0] = new Vector2f(uOffset, vOffset + yOffset); // 0, 1 (0)
+		uvs[1] = new Vector2f(uOffset + xOffset, vOffset + yOffset); // 1, 1 (1)
+		uvs[2] = new Vector2f(uOffset + xOffset, vOffset); // 1, 0 (2)
+		//uvs[3] = new Vector2f(uOffset + xOffset, vOffset); // 1, 0 (2)
+		uvs[3] = new Vector2f(uOffset, vOffset);           // 0, 0 (3)
+		//uvs[5] = new Vector2f(uOffset, vOffset + yOffset); // 0, 1 (0)
 		return uvs;
 	}
 	

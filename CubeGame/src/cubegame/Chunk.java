@@ -247,6 +247,13 @@ public class Chunk {
 			normalList.add(normals[1]);
 			normalList.add(normals[2]);
 			
+			// build texture coordinates
+			Vector2f coords[] = Cube.getUVTextureMapD(material, World.mapTextureWidth, World.mapTextureHeight);
+			for (Vector2f textCord : coords) {
+				textureList.add(textCord.x);
+				textureList.add(textCord.y);
+			}
+			
 			// point 0
 			vertexList.add(buffer[0] + position.x + x);
 			vertexList.add(buffer[1] + position.y + y);
@@ -334,12 +341,13 @@ public class Chunk {
 				indexBufferId = GL.genVBO();
 				
 				// prepare the vertex buffer
-				int bufferSize = vertexList.size() + (normalList.size() * 4);
+				int bufferSize = vertexList.size() + (normalList.size() * 4) + textureList.size();
 				float buffer[] = new float[bufferSize];
 				int index = 0;
 				int normalIndex = 0;
+				int textureIndex = 0;
 				int tracker = 0;
-				for (int i = 0; i < bufferSize; i += 6) {
+				for (int i = 0; i < bufferSize; i += 8) {
 					// first the vertex
 					buffer[i]     = vertexList.get(index);
 					buffer[i + 1] = vertexList.get(index + 1);
@@ -350,7 +358,12 @@ public class Chunk {
 					buffer[i + 4] = normalList.get(normalIndex + 1);
 					buffer[i + 5] = normalList.get(normalIndex + 2);
 					
+					// and now the textures!
+					buffer[i + 6] = textureList.get(textureIndex);
+					buffer[i + 7] = textureList.get(textureIndex + 1);
+					
 					index += 3;
+					textureIndex += 2;
 					
 					// we have to duplicate normals for 4 verts
 					tracker ++;
@@ -383,29 +396,28 @@ public class Chunk {
 			glCallList(displayList);
 		} else {
 			// render VBO
-			
-			glColor3f(1.0f, 0.0f, 0.0f);
-			
+
 			// enable drawing
 			glEnableClientState(GL_VERTEX_ARRAY);
 			glEnableClientState(GL_NORMAL_ARRAY);
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 			
 			// bind the VBO and tell openGL the vertex pointer offset
 			GL.bindStaticBuffer(vertexBufferId);
 			
-			// 3 floats * 4 vertices * 4 bytes per float = 48 + 1 normal = 60
-			glVertexPointer(3, GL_FLOAT, 24, (long)0);
-			
-			//
-			glNormalPointer(GL_FLOAT, 24, (long)12);
-			
-			// TODO: normals (lighting will look different ATM since normals are not sent)
+			// 32 bytes per vertex
+			// sends 3 vertex floats, then 3 normal floats, then 2 texcoord floats
+			// (that's how we get 0, 12, 24 all out of 32)
+			glVertexPointer(3, GL_FLOAT, 32, 0);
+			glNormalPointer(GL_FLOAT, 32, 12);
+			glTexCoordPointer(2, GL_FLOAT, 32, 24);
 			
 			// draw!
 			GL.bindStaticIndexBuffer(indexBufferId);
 			glDrawRangeElements(GL_TRIANGLES, 0, indexID, indexList.size(), GL_UNSIGNED_INT, 0);
 			
 			// disable drawing
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 			glDisableClientState(GL_NORMAL_ARRAY);
 			glDisableClientState(GL_VERTEX_ARRAY);
 		}
