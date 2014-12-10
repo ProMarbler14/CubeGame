@@ -42,6 +42,7 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL11.*;
 
 import org.lwjgl.opengl.ARBVertexBufferObject;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GLContext;
 
 import java.nio.FloatBuffer;
@@ -113,6 +114,7 @@ public final class GL {
 		minorVersion = Integer.parseInt(getOpenGLVersion().substring(2,3).trim());
 		
 		// set the depth buffer for proper depth alignment
+		glDepthFunc(GL_LEQUAL);
 		glEnable(GL_DEPTH_TEST);
 		
 		// enable hardware culling, idk why its GL_FRONT but its inside out with doing the default...

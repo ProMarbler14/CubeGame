@@ -79,7 +79,7 @@ public class World {
 
 		// enable drawing
 		glEnableClientState(GL_VERTEX_ARRAY);
-		//glEnableClientState(GL_NORMAL_ARRAY);
+		glEnableClientState(GL_NORMAL_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		
 		// draw all chunks
@@ -91,7 +91,7 @@ public class World {
 		
 		// disable drawing
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-		//glDisableClientState(GL_NORMAL_ARRAY);
+		glDisableClientState(GL_NORMAL_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);			
 	}
 	

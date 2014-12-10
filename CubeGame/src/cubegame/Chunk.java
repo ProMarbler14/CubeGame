@@ -37,7 +37,6 @@ package cubegame;
 import graphics.GL;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.util.ArrayList;
 
