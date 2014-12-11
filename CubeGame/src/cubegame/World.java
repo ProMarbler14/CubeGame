@@ -63,8 +63,8 @@ public class World {
 		mapTexture = Util.loadTexture("res/textures/texturemap.png", "PNG");
 		
 		// create some chunks
-		for (int x = -4; x < 4; x ++) {
-			for (int z = -4; z < 4; z ++) {
+		for (int x = 0; x < 1; x ++) {
+			for (int z = 0; z < 1; z ++) {
 				World.addChunk(new Chunk(new Vector3f((float)(x * (float)Chunk.CHUNK_SIZE), 0.0f, (float)(z * (float)Chunk.CHUNK_SIZE))));
 			}
 		}

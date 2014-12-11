@@ -103,8 +103,6 @@ public class Chunk {
 	
 	// buffers for legacy openGL
 	private FloatBuffer vertexArrayBuffer;
-	private FloatBuffer normalArrayBuffer;
-	private FloatBuffer textureArrayBuffer;
 	private ShortBuffer indexArrayBuffer;
 	
 	/**
@@ -264,25 +262,31 @@ public class Chunk {
 	private void preRenderChunk() {
 		if (GL.isLegacy()) {
 			System.out.println("Legacy GL: Preparing the chunk Vertex Array!");
-			
-			// vertex array
-			float vertexArray[] = new float[vertexList.size()];
-			for (int i = 0; i < vertexList.size(); i ++)
-				vertexArray[i] = vertexList.get(i);
-			
-			// index array
-			short indexArray[] = new short[indexList.size()];
-			for (int i = 0; i < indexList.size(); i ++)
-				indexArray[i] = indexList.get(i);
-			
-			// normal array
+
+			// prepare the vertex buffer
+			int bufferSize = vertexList.size() + (normalList.size() * 4) + textureList.size();
+			float buffer[] = new float[bufferSize];
+			int index = 0;
 			int normalIndex = 0;
+			int textureIndex = 0;
 			int tracker = 0;
-			float normalArray[] = new float[normalList.size() * 4];
-			for (int i = 0; i < normalList.size() * 4; i += 3) {
-				normalArray[i]     = normalList.get(normalIndex);
-				normalArray[i + 1] = normalList.get(normalIndex + 1);
-				normalArray[i + 2] = normalList.get(normalIndex + 2);
+			for (int i = 0; i < bufferSize; i += 8) {
+				// first the vertex
+				buffer[i]     = vertexList.get(index);
+				buffer[i + 1] = vertexList.get(index + 1);
+				buffer[i + 2] = vertexList.get(index + 2);
+				
+				// and now, the normal
+				buffer[i + 3] = normalList.get(normalIndex);
+				buffer[i + 4] = normalList.get(normalIndex + 1);
+				buffer[i + 5] = normalList.get(normalIndex + 2);
+				
+				// and now the textures!
+				buffer[i + 6] = textureList.get(textureIndex);
+				buffer[i + 7] = textureList.get(textureIndex + 1);
+				
+				index += 3;
+				textureIndex += 2;
 				
 				// we have to duplicate normals for 4 verts
 				tracker ++;
@@ -291,17 +295,14 @@ public class Chunk {
 					tracker = 0;
 				}
 			}
+			vertexArrayBuffer = Util.createBuffer(buffer);
 			
-			// texture array
-			float textureArray[] = new float[textureList.size()];
-			for (int i = 0; i < textureList.size(); i ++)
-				textureArray[i] = textureList.get(i);
-			
-			// now create the buffers
-			vertexArrayBuffer = Util.createBuffer(vertexArray);
-			normalArrayBuffer = Util.createBuffer(normalArray);
-			textureArrayBuffer = Util.createBuffer(textureArray);
+			// prepare the buffer for indices
+			short indexArray[] = new short[indexList.size()];
+			for (int i = 0; i < indexList.size(); i ++)
+				indexArray[i] = indexList.get(i);
 			indexArrayBuffer = Util.createBuffer(indexArray);
+			
 			
 			amountOfIndices = indexList.size();
 		} else {
@@ -380,9 +381,15 @@ public class Chunk {
 	 */
 	public void render() {
 		if (GL.isLegacy()) {
-			glVertexPointer(3, 0, vertexArrayBuffer); // 3 floats per vertex, not interleaved
-			glNormalPointer(0, normalArrayBuffer); // not interleaved
-			glTexCoordPointer(2, 0, textureArrayBuffer); // 2 floats per vertex, not interleaved
+			// each position offset is the amount of "items" between each thing
+			// so 0-3 means 3 points for a vertex, 3-6 means 3 points for a normal
+			// the 32 is the stride between all of the points
+			vertexArrayBuffer.position(0);
+			glVertexPointer(3, 32, vertexArrayBuffer);
+			vertexArrayBuffer.position(3);
+			glNormalPointer(32, vertexArrayBuffer);
+			vertexArrayBuffer.position(6);
+			glTexCoordPointer(2, 32, vertexArrayBuffer);
 
 			glDrawElements(GL_TRIANGLES, indexArrayBuffer);
 		} else {

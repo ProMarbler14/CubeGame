@@ -255,7 +255,7 @@ public final class GL {
 	 * @return true if the GL is a legacy context
 	 */
 	public static boolean isLegacy() {
-		return isLegacy;
+		return true; //isLegacy;
 	}
 	
 	/**
