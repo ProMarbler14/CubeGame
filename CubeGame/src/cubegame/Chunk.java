@@ -117,6 +117,12 @@ public class Chunk {
 		textureList = new ArrayList<Float>();
 		indexList = new ArrayList<Short>();
 		
+		if (!GL.isLegacy()) {
+			// create the buffer
+			vertexBufferId = GL.genVBO();
+			indexBufferId = GL.genVBO();
+		}
+		
 		cubeList = new short[CHUNK_SIZE][CHUNK_SIZE][CHUNK_SIZE];
 		this.position = position;
 		createChunk();
@@ -260,114 +266,59 @@ public class Chunk {
 	 * (as the displayList / VBO needs updated)
 	 */
 	private void preRenderChunk() {
-		if (GL.isLegacy()) {
+		if (GL.isLegacy())
 			System.out.println("Legacy GL: Preparing the chunk Vertex Array!");
-
-			// prepare the vertex buffer
-			int bufferSize = vertexList.size() + (normalList.size() * 4) + textureList.size();
-			float buffer[] = new float[bufferSize];
-			int index = 0;
-			int normalIndex = 0;
-			int textureIndex = 0;
-			int tracker = 0;
-			for (int i = 0; i < bufferSize; i += 8) {
-				// first the vertex
-				buffer[i]     = vertexList.get(index);
-				buffer[i + 1] = vertexList.get(index + 1);
-				buffer[i + 2] = vertexList.get(index + 2);
-				
-				// and now, the normal
-				buffer[i + 3] = normalList.get(normalIndex);
-				buffer[i + 4] = normalList.get(normalIndex + 1);
-				buffer[i + 5] = normalList.get(normalIndex + 2);
-				
-				// and now the textures!
-				buffer[i + 6] = textureList.get(textureIndex);
-				buffer[i + 7] = textureList.get(textureIndex + 1);
-				
-				index += 3;
-				textureIndex += 2;
-				
-				// we have to duplicate normals for 4 verts
-				tracker ++;
-				if (tracker == 4) {
-					normalIndex += 3;
-					tracker = 0;
-				}
-			}
-			vertexArrayBuffer = Util.createBuffer(buffer);
-			
-			// prepare the buffer for indices
-			short indexArray[] = new short[indexList.size()];
-			for (int i = 0; i < indexList.size(); i ++)
-				indexArray[i] = indexList.get(i);
-			indexArrayBuffer = Util.createBuffer(indexArray);
-			
-			
-			amountOfIndices = indexList.size();
-		} else {
+		else
 			System.out.println("Preparing the chunk VBO!");
+
+		// prepare the vertex buffer
+		int bufferSize = vertexList.size() + (normalList.size() * 4) + textureList.size();
+		float buffer[] = new float[bufferSize];
+		int index = 0;
+		int normalIndex = 0;
+		int textureIndex = 0;
+		int tracker = 0;
+		for (int i = 0; i < bufferSize; i += 8) {
+			// first the vertex
+			buffer[i]     = vertexList.get(index);
+			buffer[i + 1] = vertexList.get(index + 1);
+			buffer[i + 2] = vertexList.get(index + 2);
 			
-			// generate a VBO if we do not have one, 
-			// if we already have one, we will just update it
-			if (vertexBufferId == -1) {
-				System.out.println("Creating VBO!");
-				
-				// create the buffer
-				vertexBufferId = GL.genVBO();
-				indexBufferId = GL.genVBO();
-				
-				// prepare the vertex buffer
-				int bufferSize = vertexList.size() + (normalList.size() * 4) + textureList.size();
-				float buffer[] = new float[bufferSize];
-				int index = 0;
-				int normalIndex = 0;
-				int textureIndex = 0;
-				int tracker = 0;
-				for (int i = 0; i < bufferSize; i += 8) {
-					// first the vertex
-					buffer[i]     = vertexList.get(index);
-					buffer[i + 1] = vertexList.get(index + 1);
-					buffer[i + 2] = vertexList.get(index + 2);
-					
-					// and now, the normal
-					buffer[i + 3] = normalList.get(normalIndex);
-					buffer[i + 4] = normalList.get(normalIndex + 1);
-					buffer[i + 5] = normalList.get(normalIndex + 2);
-					
-					// and now the textures!
-					buffer[i + 6] = textureList.get(textureIndex);
-					buffer[i + 7] = textureList.get(textureIndex + 1);
-					
-					index += 3;
-					textureIndex += 2;
-					
-					// we have to duplicate normals for 4 verts
-					tracker ++;
-					if (tracker == 4) {
-						normalIndex += 3;
-						tracker = 0;
-					}
-				}
-				GL.prepareStaticVBO(vertexBufferId, Util.createBuffer(buffer));
-				
-				// prepare the buffer for indices
-				short indexArray[] = new short[indexList.size()];
-				for (int i = 0; i < indexList.size(); i ++)
-					indexArray[i] = indexList.get(i);
-				GL.prepareStaticVBO(indexBufferId, Util.createBuffer(indexArray));
-				
-				amountOfIndices = indexList.size();
-				
-				// make the GC grab our extra copies of ram
-				buffer = null;
-				indexArray = null;
-			} else {
-				System.out.println("Updating the VBO!");
-				
-				// TODO
+			// and now, the normal
+			buffer[i + 3] = normalList.get(normalIndex);
+			buffer[i + 4] = normalList.get(normalIndex + 1);
+			buffer[i + 5] = normalList.get(normalIndex + 2);
+			
+			// and now the textures!
+			buffer[i + 6] = textureList.get(textureIndex);
+			buffer[i + 7] = textureList.get(textureIndex + 1);
+			
+			index += 3;
+			textureIndex += 2;
+			
+			// we have to duplicate normals for 4 verts
+			tracker ++;
+			if (tracker == 4) {
+				normalIndex += 3;
+				tracker = 0;
 			}
 		}
+		
+		// prepare the buffer for indices
+		short indexArray[] = new short[indexList.size()];
+		for (int i = 0; i < indexList.size(); i ++)
+			indexArray[i] = indexList.get(i);
+		
+		if (GL.isLegacy()) {
+			vertexArrayBuffer = Util.createBuffer(buffer);
+			indexArrayBuffer = Util.createBuffer(indexArray);
+		} else {
+			GL.prepareStaticVBO(vertexBufferId, Util.createBuffer(buffer));
+			GL.prepareStaticVBO(indexBufferId, Util.createBuffer(indexArray));
+		}
+				
+		amountOfIndices = indexList.size();
+	
 		
 		// FREE THE RAM!
 		vertexList.clear();
