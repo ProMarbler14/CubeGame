@@ -1,3 +1,4 @@
 *.class
 CubeGame/thirdparty
 .metadata
+/bin/
