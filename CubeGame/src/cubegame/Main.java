@@ -40,6 +40,11 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 
 public class Main {
+	/**
+	 * boolean variable reading if the main thread is in the background at the moment
+	 */
+	private static boolean isBackground = false;
+	
 	public static void main(String[] args) {
 		Graphics.init(800, 600);
 		Time.init();
@@ -50,15 +55,7 @@ public class Main {
 		//Display.setVSyncEnabled(true);
 		
 		do {
-			//Can't have over 1,000 fps...or else delta would be 0
-			if (Time.shouldMainThreadSleep()) {
-				try {
-					Thread.currentThread();
-					Thread.sleep(1);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+			handleMainThread();
 			
 			Time.update();
 			Input.pullInput();
@@ -68,5 +65,39 @@ public class Main {
 		
 		// cleanup
 		Graphics.destroy();
+	}
+	
+	/**
+	 * Throttles sleeping of the main thread
+	 */
+	private static void handleMainThread() {
+		// if we are currently in the background, sleep to help save CPU cycles
+		if (!Display.isActive()) {
+			try {
+				if (!isBackground) {
+					isBackground = true;
+					System.out.println("Main Thread is put to sleep.  Delta is now 200ms");
+				}
+				Thread.currentThread();
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		} else {
+			if (isBackground) {
+				System.out.println("Main Thread woke up.");
+				isBackground = false;
+			}
+			
+			//Can't have over 1,000 FPS...or else delta would be 0
+			if (Time.shouldMainThreadSleep()) {
+				try {
+					Thread.currentThread();
+					Thread.sleep(1);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}		
 	}
 }
