@@ -3,22 +3,36 @@
 //
 // Copyright (c) 2014 Jeff Hutchinson
 // Copyright (c) 2014 Glenn Smith
+// All rights reserved.
 //
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
+// Redistribution and use in source and binary forms, with or without 
+// modification, are permitted provided that the following conditions are met:
 //
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// 1. Redistributions of source code must retain the above copyright notice, 
+//    this list of conditions and the following disclaimer.
 //
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// 2. Redistributions in binary form must reproduce the above copyright notice,
+//    this list of conditions and the following disclaimer in the documentation 
+//    and/or other materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its 
+//    contributors may be used to endorse or promote products derived from this
+//    software without specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 //-----------------------------------------------------------------------------
 
-package cubegame;
+package graphics;
 
 /**
  * OpenGL includes
@@ -37,17 +51,20 @@ import java.util.ArrayList;
 
 import org.lwjgl.BufferUtils;
 
+import cubegame.Util;
+
 /**
  * The GL class is a higher level API that is responsible
  * for handling OpenGL between different contexts into a
  * common API.  It is responsible for maintaining an easy to
  * use graphics system.
  * 
- * Planned Support:
- * OpenGL 2.0 (VBO + Shaders)
- * OpenGL 1.5 (VBO + FFP)
- * OpenGL 1.x + ARB VBO (for ARB VBOs)
- * OpenGL 1.1+ (ImmediateMode + Display Lists)
+ * Current API's supported:
+ * 
+ * - Fixed Function Pipeline:
+ *    - GL 1.1 (Vertex Arrays)
+ *    - GL 1.x (ARB VBO required)
+ *    - GL 1.5 (Vertex Buffer Objects)
  */
 public final class GL {
 	private static boolean initialized = false;
@@ -55,13 +72,14 @@ public final class GL {
 	private static int minorVersion = 0;
 	
 	/**
-	 * Interal use only
+	 * Internal use only
 	 * True if the current context supports at least OpenGL 2.0
 	 */
+	@SuppressWarnings(value = { "unused" })
 	private static boolean supportsOpenGL20 = false;
 	
 	/**
-	 * Interal use only
+	 * Internal use only
 	 * True if the current context supports at least OpenGL 1.5
 	 */
 	private static boolean supportsOpenGL15 = false;
@@ -74,15 +92,10 @@ public final class GL {
 	
 	/**
 	 * Internal use only
-	 * True if the GL version doesn't support VBOs.  Then we rely on immediate mode + displayLists
+	 * True if the GL context is a legacy openGL context. Legacy is the last resort context
+	 * that is 100% fixed function pipeline with no vbo extensions.  All client vertex arrays.
 	 */
-	private static boolean useImmediateMode = false;
-	
-	/**
-	 * Internal use only
-	 * True if the GL context supports some form of VBOs
-	 */
-	private static boolean supportsVBO = false;
+	private static boolean isLegacy = false;
 	
 	/**
 	 * Stores display lists and cleans them up at the end
@@ -125,23 +138,20 @@ public final class GL {
 		// texturing:
 		glEnable(GL_TEXTURE_2D);
 		
-		//if (majorVersion >= 2) {
-			//supportsOpenGL20 = true;
-			//supportsOpenGL15 = true;
-			//supportsVBO = true;
-		//} else if (majorVersion == 1) {
-			//if (minorVersion >= 5) {
-				//supportsOpenGL15 = true;
-				//supportsVBO = true;
-			//} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
-				//supportsARBVBO = true;
-				//supportsVBO = true;
-			//} else {
+		if (majorVersion >= 2) {
+			supportsOpenGL20 = true;
+			supportsOpenGL15 = true;
+		} else if (majorVersion == 1) {
+			if (minorVersion >= 5) {
+				supportsOpenGL15 = true;
+			} else if (GLContext.getCapabilities().GL_ARB_vertex_buffer_object) {
+				supportsARBVBO = true;
+			} else {
 				// old powerpc macs probably? tehehe
 				// I'LL SUPPORT THEM FOREVERRR
-				useImmediateMode = true;
-			//}
-		//}
+				isLegacy = true;
+			}
+		}
 	}
 	
 	/**
@@ -218,19 +228,19 @@ public final class GL {
 	}
 	
 	/**
-	 * prepares a static vertex buffer object of ints
+	 * prepares a static vertex buffer object of integers
 	 * 
 	 * @param id the VBO id
-	 * @param data (ints) the data to be pushed into the VBO
+	 * @param data (integers) the data to be pushed into the VBO
 	 * @see float method
 	 */
 	public static void prepareStaticVBO(int id, IntBuffer buffer) {
-		// TODO
-		System.err.println("prepareStaticVBO(int id, IntBuffer buffer) - method not done yet!");
 		if (supportsOpenGL15) {
-			
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer, GL_STATIC_DRAW);
 		} else if (supportsARBVBO) {
-			
+			ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, id);
+			ARBVertexBufferObject.glBufferDataARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, buffer, ARBVertexBufferObject.GL_STATIC_DRAW_ARB);
 		}
 	}
 	
@@ -244,10 +254,20 @@ public final class GL {
 		else if (supportsARBVBO)
 			ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, id);
 	}
-		
 	
 	/**
-	 * Deletes the vertex buffer object
+	 * Binds a static VBO (index buffer object) before submitting it to the graphics driver
+	 * @param id the VBO id
+	 */
+	public static void bindStaticIndexBuffer(int id) {
+		if (supportsOpenGL15)
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+		else if (supportsARBVBO)
+			ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ELEMENT_ARRAY_BUFFER_ARB, id);		
+	}
+	
+	/**
+	 * Deletes the vertex buffer object (or index buffer object)
 	 * @param id the VBO id
 	 */
 	public static void deleteVBO(int id) {
@@ -259,11 +279,13 @@ public final class GL {
 	}
 	
 	/**
-	 * Checks to see if the GL is using immediate rendering mode
-	 * @return true if the GL context is rendering using immediate mode
+	 * Checks to see if the GL is rendering with a legacy context.
+	 * A legacy context is Fixed-Function Pipeline OpenGL with no
+	 * vertex buffers. The only requirement is at least GL 1.1
+	 * @return true if the GL is a legacy context
 	 */
-	public static boolean isImmediateMode() {
-		return useImmediateMode;
+	public static boolean isLegacy() {
+		return isLegacy;
 	}
 	
 	/**
