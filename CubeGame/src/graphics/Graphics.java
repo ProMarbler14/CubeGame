@@ -87,7 +87,7 @@ public final class Graphics {
 		// update camera position and center cursor so we can measure dx/dy of mouse
 		float dt = delta / 1000.0f;
 		//camera.apply(Input.getHorizontal() * dt, Input.getVertical() * dt);
-		camera.applyMotion(Input.getHorizontal() * dt, 0, Input.getVertical() * dt);
+		camera.applyMotion(Input.getHorizontal() * dt, Input.getDepth() * dt, Input.getVertical() * dt);
 		camera.applyRotation(Input.getPitch(), Input.getYaw());
 		camera.update();
 		

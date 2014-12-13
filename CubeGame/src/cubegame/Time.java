@@ -3,6 +3,7 @@
 //
 // Copyright (c) 2014 Jeff Hutchinson
 // Copyright (c) 2014 Glenn Smith
+// Copyright (c) 2014 Adric Blake
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
@@ -45,15 +46,15 @@ public class Time {
 	public static int delta = 0;
 	
 	/**
-	 * Last frame's time
+	 * Last frame's time since timer start, counted from 0
 	 */
-	private static long lastTime = 0;
+	private static int lastTime = 0;
 	
 	/**
 	 * FPS counter
 	 */
 	private static int fpsCounter = 0;
-	private static long nextSecond = 0;
+	private static int nextSecond = 0;
 	
 	/**
 	 * Current fps
@@ -61,18 +62,32 @@ public class Time {
 	private static int fps;
 	
 	/**
+	 * Timer start time, in milliseconds since the Unix epoch.
+	 */
+	private static long startTime;
+	
+	/**
 	 * Initialize the timer
 	 */
 	public static void init() {
-		lastTime = getTime();
+		startTime = Sys.getTime();
+		lastTime = 0;
 		nextSecond = lastTime + 1000;
 	}
 	
 	/**
-	 * Get the time in milliseconds
-	 * @return the time in milliseconds
+	 * Get the running time in milliseconds
+	 * @return the running time in milliseconds
 	 */
-	public static long getTime() {
+	public static int getRunTime() {
+		return (int) (((Sys.getTime() - startTime) * 1000) / Sys.getTimerResolution());
+	}
+	
+	/**
+	 * Gets the actual (system) time.
+	 * @return the current system Unix time.
+	 */
+	public static long getSystemTime() {
 		return (Sys.getTime() * 1000) / Sys.getTimerResolution();
 	}
 	
@@ -80,8 +95,8 @@ public class Time {
 	 * Calculate the elapsed time for the frame
 	 */
 	public static void update() {
-		long time = getTime();
-		delta = (int)(long)(time - lastTime);
+		int time = getRunTime();
+		delta = time - lastTime;
 		lastTime = time;
 		
 		fpsCounter ++;
@@ -91,7 +106,7 @@ public class Time {
 			nextSecond = lastTime + 1000;
 			
 			// show fps
-			Display.setTitle("JCraft Version 1.0.0 DEV FPS: " + Time.getFPS() + " mspf: " + (1000 / (float)Time.getFPS()));
+			Display.setTitle("JCraft Version 1.0.0 DEV FPS: " + Time.getFPS() + " mspf: " + (1000 / (float)Time.getFPS())/* + " Pos: " + Graphics.camera.getPosition() + " Rot: " + Graphics.camera.getPosition()*/);
 		}
 	}
 	
@@ -100,7 +115,7 @@ public class Time {
 	 * @return true if the main thread should sleep
 	 */
 	public static boolean shouldMainThreadSleep() {
-		return (getTime() - lastTime) <= 0;
+		return (getRunTime() - lastTime) <= 0;
 	}
 	
 	/**
@@ -110,4 +125,5 @@ public class Time {
 	public static int getFPS() {
 		return fps;
 	}
+	
 }
