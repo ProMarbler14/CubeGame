@@ -102,6 +102,7 @@ public final class Graphics {
 	 * Destroys the canvas render window and shuts down the graphics library
 	 */
 	public static void destroy() {		
+		System.out.println("Graphics are shutting down.");
 		// cleanup the GL
 		GL.cleanup();
 		
